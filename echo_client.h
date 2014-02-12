@@ -36,9 +36,6 @@ private:
 	struct hostent	*hostptr;
 	char **pptr;
 	char str[16];
-	pthread_t tid;
-
-
 };
 
 #endif
