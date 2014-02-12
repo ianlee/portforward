@@ -32,10 +32,8 @@ public:
 private:
 	char * _host;
 	int clientSock, _port;		
-	struct sockaddr_in server;
-	struct hostent	*hostptr;
-	char **pptr;
-	char str[16];
+	pthread_t tid;
+
 };
 
 #endif

@@ -1,17 +1,17 @@
 #include "echo_client.h"
 
 Client::Client(char * host, int port) : _host(host), _port(port) {}
+
 int Client::run()
 {	
 	char sendbuf[BUFLEN];	
 	clientSock = create_socket();
 	clientSock = connect_to_server(clientSock, _host);
 
-	while(fgets(sendbuf, BUFLEN, stdin))
-	{
-		send_msgs(clientSock, sendbuf);
-		fflush(stdout);
-	}
+	sprintf(sendbuf, "foobar");
+	send_msgs(clientSock, sendbuf);
+	fflush(stdout);
+
 	return 0;
 }
 int Client::create_socket()
