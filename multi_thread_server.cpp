@@ -4,20 +4,17 @@ MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
 int MultiThreadServer::run()
 {
-	pthread_t tid;
-	int i = 0;
+	pthread_t tids[MAXCLIENTS];
+	
 	serverSock = create_socket();
 	serverSock = bind_socket();
 	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
-	
-	do
-	{
-		accept_client();
-		pthread_create(&tid, NULL, process_client, this);
-	}
-	while(i < 2);
 
+	for(int i = 0; i < 1000; i++)
+	{
+		
+	}
 	pthread_exit(0);
 	close(newServerSock);
 	close(serverSock);
@@ -94,16 +91,16 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
 	int value = 1;
-    if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
-    	perror("setsockopt failed\n");
+	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
+		perror("setsockopt failed\n");
 	
 	// Set buffer length to send or receive to BUFLEN.
 	value = BUFLEN;
-    if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
-    	perror("setsockopt failed\n");
+	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
+		perror("setsockopt failed\n");
 	
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
-    	perror("setsockopt failed\n");
+		perror("setsockopt failed\n");
 
 	return listenSocket;
 

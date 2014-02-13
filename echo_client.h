@@ -35,8 +35,7 @@ public:
 
 private:
 	char * _host;
-	int _port, times_sent;	
-	pthread_t tid;
+	int _port, times_sent;
 
 };
 
