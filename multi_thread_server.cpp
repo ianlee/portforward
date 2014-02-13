@@ -5,9 +5,10 @@ MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 int MultiThreadServer::run()
 {
 	pthread_t tid;
-	
+	int i = 0;
 	serverSock = create_socket();
 	serverSock = bind_socket();
+	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
 	
 	do
@@ -15,7 +16,7 @@ int MultiThreadServer::run()
 		accept_client();
 		pthread_create(&tid, NULL, process_client, this);
 	}
-	while(1);
+	while(i < 2);
 
 	pthread_exit(0);
 	close(newServerSock);
@@ -87,6 +88,25 @@ int MultiThreadServer::recv_msgs(int socket, char * bp)
 		bytes_to_read -= n;
 	}
 	return newServerSock;
+}
+
+int MultiThreadServer::set_sock_option(int listenSocket)
+{
+	// Reuse address set
+	int value = 1;
+    if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
+    	perror("setsockopt failed\n");
+	
+	// Set buffer length to send or receive to BUFLEN.
+	value = BUFLEN;
+    if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
+    	perror("setsockopt failed\n");
+	
+	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
+    	perror("setsockopt failed\n");
+
+	return listenSocket;
+
 }
 void * MultiThreadServer::process_client(void * args)
 {

@@ -32,6 +32,7 @@ public:
 	int accept_client();
 	void send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * bp);
+	int set_sock_option(int listenSocket);
 private:
 
 	int 	serverSock, newServerSock, _port;

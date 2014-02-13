@@ -4,11 +4,9 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 
 int Client::run()
 {	
-
 	//Create multiple processes and each process will be a single client essentially
 
-	//sprintf(sendbuf, "foobar");
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 2; i++)
 	{
 		switch(fork())
 		{
@@ -16,7 +14,7 @@ int Client::run()
 				std::cerr << "An error has occurred" << std::endl;
 				break;
 			case 0:
-				child_client_process(i);
+				child_client_process(i, times_sent);
 				break;
 			default:
 				break;
@@ -27,14 +25,18 @@ int Client::run()
 	std::cout << "All clients finished processing" << std::endl;
 	return 0;
 }
-int Client::child_client_process(int client_num)
+int Client::child_client_process(int client_num, int times_sent)
 {
 	std::cout << "Processing client " << client_num << std::endl;
-	//printf("Sending: %s\n", sendbuf);
-	//send_msgs(clientSock, sendbuf);
+	int clientSock = create_socket();
+	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
+	clientSock = connect_to_server(clientSock, _host);
 
-	//recv_msgs(clientSock, recvbuf);
-	//printf("Receiving: %s\n", recvbuf);
+	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
+	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes" << std::endl;
+
+	std::cout << "Closing client " << client_num << " socket" << std::endl;
+	close(clientSock);
 	fflush(stdout);
 	exit(0);
 	return 0;
