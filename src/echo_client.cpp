@@ -27,14 +27,15 @@ int Client::run()
 }
 int Client::child_client_process(int client_num, int times_sent)
 {
-	std::cout << "Processing client " << client_num << std::endl;
+//	std::cout << "Processing client " << client_num << std::endl;
 	int clientSock = create_socket();
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	clientSock = connect_to_server(clientSock, _host);
 
-	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
-	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes" << std::endl;
-
+//	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
+//	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes" << std::endl;
+send_msgs(clientSock, sendBuf);
+recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
 	close(clientSock);
 	fflush(stdout);
@@ -86,9 +87,9 @@ int Client::connect_to_server(int socket, char * host)
 		perror("connect");
 		return 0;
 	}
-	printf("Connected:    Server Name: %s\n", hostptr->h_name);
+//	printf("Connected:    Server Name: %s\n", hostptr->h_name);
 	pptr = hostptr->h_addr_list;
-	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
+//	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
 	return socket;
 }
 
