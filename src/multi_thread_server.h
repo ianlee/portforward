@@ -21,6 +21,13 @@
 #define TCP_PORT 7000
 #define MAXCLIENTS 1000
 
+struct client_data {
+
+	char client_addr[BUFLEN];
+	int socket;
+
+};
+
 class MultiThreadServer {
 
 public:
