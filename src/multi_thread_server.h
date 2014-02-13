@@ -19,7 +19,7 @@
 
 #define BUFLEN 255
 #define TCP_PORT 7000
-#define MAXCLIENTS 10000
+#define MAXCLIENTS 1000
 
 class MultiThreadServer {
 
