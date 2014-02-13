@@ -137,3 +137,9 @@ void * MultiThreadServer::process_client(void * args)
 	mServer->send_msgs(sock, buf);	
 	pthread_exit(NULL);
 }
+int MultiThreadServer::set_port(int port){
+	_port = port;
+	return 1;
+}
+
+

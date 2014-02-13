@@ -42,6 +42,7 @@ public:
 	void send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * bp);
 	int set_sock_option(int listenSocket);
+	int set_port(int port);
 private:
 
 	int 	serverSock, newServerSock, _port;
