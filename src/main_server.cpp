@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Usage: %s [port]\n", argv[0]);
 			exit(1);
 	}
-	MultiThreadServer server(port);
+	MultiThreadServer::Instance();
 	server.run();
 	return 0;
 }
