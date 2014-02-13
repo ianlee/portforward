@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -Wall -g
 LDFLAGS = -lpthread
 
-all: myprogram
+all: myprogram client
 client: main_client
 echo_client.o : echo_client.cpp echo_client.h
 	${CC} ${CFLAGS} -c echo_client.cpp
