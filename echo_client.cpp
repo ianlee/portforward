@@ -1,28 +1,54 @@
 #include "echo_client.h"
 
-Client::Client(char * host, int port) : _host(host), _port(port) {}
+Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), times_sent(t_sent) {}
 
-int Client::run(/* Pass in number of times sent */)
+int Client::run()
 {	
 
 	//Create multiple processes and each process will be a single client essentially
 
-	char sendbuf[BUFLEN], recvbuf[BUFLEN];
-	clientSock = create_socket();
-	clientSock = connect_to_server(clientSock, _host);
-
 	//sprintf(sendbuf, "foobar");
-	
-	
+	for(int i = 0; i < 5; i++)
+	{
+		switch(fork())
+		{
+			case -1:
+				std::cerr << "An error has occurred" << std::endl;
+				break;
+			case 0:
+				child_client_process(i);
+				break;
+			default:
+				break;
+		}
+	}
+	wait_for_client_processes();
+
+	std::cout << "All clients finished processing" << std::endl;
+	return 0;
+}
+int Client::child_client_process(int client_num)
+{
+	std::cout << "Processing client " << client_num << std::endl;
 	//printf("Sending: %s\n", sendbuf);
 	//send_msgs(clientSock, sendbuf);
 
 	//recv_msgs(clientSock, recvbuf);
 	//printf("Receiving: %s\n", recvbuf);
 	fflush(stdout);
-
+	exit(0);
 	return 0;
 }
+
+void Client::wait_for_client_processes()
+{
+	while (wait(NULL) > 0) {
+   		if (errno == ECHILD) { /* If there are no more child processes running */
+      		break;
+   		}
+	}
+}
+
 int Client::create_socket()
 {
 	int sd;

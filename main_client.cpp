@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Usage: %s host [port] <number of times sent>\n", argv[0]);
 			exit(1);	
 	}
-	Client client(host, port);
+	Client client(host, port, times_sent);
 	client.run();
 	return 0;
 }
