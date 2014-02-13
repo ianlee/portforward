@@ -11,10 +11,14 @@ int MultiThreadServer::run()
 	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
 
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < MAXCLIENTS; i++)
 	{
-		
+		accept_client();
+		pthread_create(&tids[i], NULL, process_client, this);
 	}
+	for(int i = 0; i < MAXCLIENTS; i++)
+		pthread_join(tids[i], NULL);
+
 	pthread_exit(0);
 	close(newServerSock);
 	close(serverSock);
