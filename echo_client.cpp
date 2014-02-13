@@ -4,12 +4,17 @@ Client::Client(char * host, int port) : _host(host), _port(port) {}
 
 int Client::run()
 {	
-	char sendbuf[BUFLEN];	
+	char sendbuf[BUFLEN], recvbuf[BUFLEN];	
 	clientSock = create_socket();
 	clientSock = connect_to_server(clientSock, _host);
 
 	sprintf(sendbuf, "foobar");
+	
+	printf("Sending: %s\n", sendbuf);
 	send_msgs(clientSock, sendbuf);
+
+	recv_msgs(clientSock, recvbuf);
+	printf("Receiving: %s\n", recvbuf);
 	fflush(stdout);
 
 	return 0;
@@ -70,6 +75,5 @@ int Client::recv_msgs(int socket, char * buf)
 		bytes_to_read -= bytes_read;
 		total_bytes_read += bytes_read;
 	}
-
 	return total_bytes_read;
 }
