@@ -15,7 +15,7 @@ int Client::run()
 				break;
 			case 0:
 				child_client_process(i, times_sent);
-				break;
+				return 0;
 			default:
 				break;
 		}
@@ -27,15 +27,15 @@ int Client::run()
 }
 int Client::child_client_process(int client_num, int times_sent)
 {
-//	std::cout << "Processing client " << client_num << std::endl;
+	std::cout << "Processing client " << client_num << std::endl;
 	int clientSock = create_socket();
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	clientSock = connect_to_server(clientSock, _host);
-
-//	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
-//	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes" << std::endl;
 send_msgs(clientSock, sendBuf);
-recv_msgs(clientSock, recvBuf);
+//	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
+	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes"<< client_num << std::endl;
+
+//recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
 	close(clientSock);
 	fflush(stdout);
