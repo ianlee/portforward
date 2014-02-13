@@ -18,7 +18,7 @@ int MultiThreadServer::run()
 	}
 	for(int i = 0; i < MAXCLIENTS; i++)
 		pthread_join(tids[i], NULL);
-
+	
 	pthread_exit(0);
 	close(newServerSock);
 	close(serverSock);
@@ -63,6 +63,7 @@ void MultiThreadServer::listen_for_clients()
 
 int MultiThreadServer::accept_client()
 {
+	struct client_data* data=(client_data*)malloc(sizeof(client_data));
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
 	
@@ -71,6 +72,9 @@ int MultiThreadServer::accept_client()
 		fprintf(stderr, "Can't accept client\n");
 		exit(1);
 	}
+	data->socket = newServerSock;
+	strcpy(data->client_addr, inet_ntoa(client.sin_addr));
+	list_of_clients.push_back(data);
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return newServerSock;
 }
