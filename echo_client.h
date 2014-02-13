@@ -31,7 +31,7 @@ public:
 
 private:
 	char * _host;
-	int clientSock, _port;		
+	int clientSock, clientSock2, _port;		
 	pthread_t tid;
 
 };

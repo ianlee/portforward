@@ -35,9 +35,8 @@ public:
 private:
 
 	int 	serverSock, newServerSock, _port;
-	std::vector<pthread_t> list_of_threads;
-	
-	static void * process_client(void *);
+	std::vector<pthread_t> list_of_clients;
+	static void * process_client(void * args);
 	
 };
 

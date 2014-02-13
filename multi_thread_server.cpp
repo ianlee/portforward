@@ -4,18 +4,22 @@ MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
 int MultiThreadServer::run()
 {
-	char buf[BUFLEN];
+	pthread_t tid;
+	
 	serverSock = create_socket();
 	serverSock = bind_socket();
 	listen_for_clients();
 	
-	accept_client();
-	recv_msgs(newServerSock, buf);
-	printf("Received: %s\n", buf);	
+	do
+	{
+		accept_client();
+		pthread_create(&tid, NULL, process_client, this);
+	}
+	while(1);
 
-	printf("Sending: %s\n", buf);
-	send_msgs(newServerSock, buf);	
-
+	pthread_exit(0);
+	close(newServerSock);
+	close(serverSock);
 	return 0;
 }
 
@@ -51,8 +55,8 @@ int MultiThreadServer::bind_socket()
 void MultiThreadServer::listen_for_clients()
 {
 	// Listen for connections
-	// queue up to 5 connect requests
-	listen(serverSock, 5);
+	// queue up to 10000 connect requests
+	listen(serverSock, MAXCLIENTS);
 }
 
 int MultiThreadServer::accept_client()
@@ -84,8 +88,15 @@ int MultiThreadServer::recv_msgs(int socket, char * bp)
 	}
 	return newServerSock;
 }
-
-void * process_client(void *)
+void * MultiThreadServer::process_client(void * args)
 {
-	return 0;
+	char buf[BUFLEN];
+	MultiThreadServer* mServer = (MultiThreadServer *) args;
+
+	mServer->recv_msgs(mServer->newServerSock, buf);
+	printf("Received: %s\n", buf);	
+
+	printf("Sending: %s\n", buf);
+	mServer->send_msgs(mServer->newServerSock, buf);	
+	pthread_exit(NULL);
 }

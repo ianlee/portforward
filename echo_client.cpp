@@ -2,19 +2,23 @@
 
 Client::Client(char * host, int port) : _host(host), _port(port) {}
 
-int Client::run()
+int Client::run(/* Pass in number of times sent */)
 {	
-	char sendbuf[BUFLEN], recvbuf[BUFLEN];	
+
+	//Create multiple processes and each process will be a single client essentially
+
+	char sendbuf[BUFLEN], recvbuf[BUFLEN];
 	clientSock = create_socket();
 	clientSock = connect_to_server(clientSock, _host);
 
-	sprintf(sendbuf, "foobar");
+	//sprintf(sendbuf, "foobar");
 	
-	printf("Sending: %s\n", sendbuf);
-	send_msgs(clientSock, sendbuf);
+	
+	//printf("Sending: %s\n", sendbuf);
+	//send_msgs(clientSock, sendbuf);
 
-	recv_msgs(clientSock, recvbuf);
-	printf("Receiving: %s\n", recvbuf);
+	//recv_msgs(clientSock, recvbuf);
+	//printf("Receiving: %s\n", recvbuf);
 	fflush(stdout);
 
 	return 0;
