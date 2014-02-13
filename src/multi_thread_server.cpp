@@ -2,6 +2,15 @@
 
 MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
+MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
+MultiThreadServer* MultiThreadServer::Instance()
+{
+	if (!m_pInstance)   // Only allow one instance of class to be generated.
+		m_pInstance = new MultiThreadServer(TCP_PORT);
+	return m_pInstance;
+}
+
+
 int MultiThreadServer::run()
 {
 	pthread_t tids[MAXCLIENTS];
@@ -13,8 +22,9 @@ int MultiThreadServer::run()
 
 	for(int i = 0; i < MAXCLIENTS; i++)
 	{
-		accept_client();
-		pthread_create(&tids[i], NULL, process_client, this);
+		int sock;
+		sock = accept_client();
+		pthread_create(&tids[i], NULL, process_client, &sock);
 	}
 	for(int i = 0; i < MAXCLIENTS; i++)
 		pthread_join(tids[i], NULL);
@@ -114,14 +124,16 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 
 }
 void * MultiThreadServer::process_client(void * args)
-{
+{	
+	int sock = *((int*) args);
+	
 	char buf[BUFLEN];
-	MultiThreadServer* mServer = (MultiThreadServer *) args;
+	MultiThreadServer* mServer = MultiThreadServer::Instance();
 
-	mServer->recv_msgs(mServer->newServerSock, buf);
+	mServer->recv_msgs(sock, buf);
 	printf("Received: %s\n", buf);	
 
 	printf("Sending: %s\n", buf);
-	mServer->send_msgs(mServer->newServerSock, buf);	
+	mServer->send_msgs(sock, buf);	
 	pthread_exit(NULL);
 }

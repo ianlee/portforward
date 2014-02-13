@@ -31,6 +31,8 @@ struct client_data {
 class MultiThreadServer {
 
 public:
+	 static MultiThreadServer* Instance();
+
 	MultiThreadServer(int port);
 	int run();
 	int create_socket();
@@ -45,6 +47,7 @@ private:
 	int 	serverSock, newServerSock, _port;
 	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
+	static MultiThreadServer* m_pInstance;
 	
 };
 
