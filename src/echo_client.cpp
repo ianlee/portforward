@@ -33,12 +33,12 @@ int Client::child_client_process(int client_num, int times_sent)
 	clientSock = connect_to_server(clientSock, _host);
 send_msgs(clientSock, sendBuf);
 //	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
-	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes"<< client_num << std::endl;
+	//std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes"<< client_num << std::endl;
 
 //recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
 	close(clientSock);
-	fflush(stdout);
+	//fflush(stdout);
 	exit(0);
 	return 0;
 }
