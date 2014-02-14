@@ -1,9 +1,19 @@
-#include "select_server.h"
+#include "multi_thread_server.h"
 
-SelectServer::SelectServer(int port) : _port(port) {}
+MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
-int SelectServer::run()
+MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
+MultiThreadServer* MultiThreadServer::Instance()
 {
+	if (!m_pInstance)   // Only allow one instance of class to be generated.
+		m_pInstance = new MultiThreadServer(TCP_PORT);
+	return m_pInstance;
+}
+
+
+int MultiThreadServer::run()
+{
+	int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
 	
 	serverSock = create_socket();
@@ -11,17 +21,20 @@ int SelectServer::run()
 	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
 
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < MAXCLIENTS; i++)
 	{
-		
+		socks[i] = accept_client();
+		pthread_create(&tids[i], NULL, process_client, (void*)&(socks[i]));
 	}
+	for(int i = 0; i < MAXCLIENTS; i++)
+		pthread_join(tids[i], NULL);
+	
 	pthread_exit(0);
-	close(newServerSock);
 	close(serverSock);
 	return 0;
 }
 
-int SelectServer::create_socket()
+int MultiThreadServer::create_socket()
 {
 	int sd;
 	// Create the socket
@@ -32,7 +45,7 @@ int SelectServer::create_socket()
 	return sd;
 }
 
-int SelectServer::bind_socket()
+int MultiThreadServer::bind_socket()
 {
 	struct	sockaddr_in server;
 
@@ -50,44 +63,60 @@ int SelectServer::bind_socket()
 	return serverSock;
 }
 
-void SelectServer::listen_for_clients()
+void MultiThreadServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
-	listen(serverSock, MAXCLIENTS);
+	listen(serverSock, 5);
 }
 
-int SelectServer::accept_client()
+int MultiThreadServer::accept_client()
 {
+	struct client_data* data=(client_data*)malloc(sizeof(client_data));
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
-	
-	if ((newServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
+	int sServerSock;
+	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
 	{
 		fprintf(stderr, "Can't accept client\n");
 		exit(1);
 	}
+	data->socket = sServerSock;
+	strcpy(data->client_addr, inet_ntoa(client.sin_addr));
+	list_of_clients.push_back(data);
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
-	return newServerSock;
+	return sServerSock;
 }
 
-void SelectServer::send_msgs(int socket, char * data)
+void MultiThreadServer::send_msgs(int socket, char * data)
 {
 	send(socket, data, BUFLEN, 0);
 }
 
-int SelectServer::recv_msgs(int socket, char * bp)
+int MultiThreadServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
-	while ((n = recv (socket, bp, bytes_to_read, 0)) < BUFLEN)
+printf("recv %d\n", socket);
+	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
+		printf("%d %d /n", n, bytes_to_read);
 		bp += n;
 		bytes_to_read -= n;
+		if(n == -1){
+			printf("error %d %d %d\n", bytes_to_read, n, socket);
+			printf("error %d\n",errno);
+			break;
+		} else if (n == 0){
+			printf("socket was gracefully closed by other side %d\n",socket);
+	pthread_exit(NULL);
+			break;
+		}
 	}
-	return newServerSock;
+printf("end recv %d\n", socket);
+	return socket;
 }
 
-int SelectServer::set_sock_option(int listenSocket)
+int MultiThreadServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
 	int value = 1;
@@ -105,15 +134,24 @@ int SelectServer::set_sock_option(int listenSocket)
 	return listenSocket;
 
 }
-void * SelectServer::process_client(void * args)
-{
+void * MultiThreadServer::process_client(void * args)
+{	
+	int sock = *((int*) args);
+	printf("socket created                %d\n", sock);
 	char buf[BUFLEN];
-	SelectServer* mServer = (SelectServer *) args;
+	MultiThreadServer* mServer = MultiThreadServer::Instance();
 
-	mServer->recv_msgs(mServer->newServerSock, buf);
+	mServer->recv_msgs(sock, buf);
 	printf("Received: %s\n", buf);	
 
 	printf("Sending: %s\n", buf);
-	mServer->send_msgs(mServer->newServerSock, buf);	
-	pthread_exit(NULL);
+	mServer->send_msgs(sock, buf);	
+	return (void*)0;
+
 }
+int MultiThreadServer::set_port(int port){
+	_port = port;
+	return 1;
+}
+
+

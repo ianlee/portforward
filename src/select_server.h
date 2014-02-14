@@ -1,5 +1,7 @@
-#ifndef MULTI_THREAD_SERVER_H
-#define MULTI_THREAD_SERVER_H
+#ifndef SELECT_SERVER_H
+#define SELECT_SERVER_H
+
+#include "client_data.h"
 
 #include <iostream>
 #include <vector>
@@ -19,11 +21,20 @@
 
 #define BUFLEN 255
 #define TCP_PORT 7000
-#define MAXCLIENTS 10000
+#define MAXCLIENTS 1000
+
+struct client_data {
+
+	char client_addr[BUFLEN];
+	int socket;
+
+};
 
 class MultiThreadServer {
 
 public:
+	 static MultiThreadServer* Instance();
+
 	MultiThreadServer(int port);
 	int run();
 	int create_socket();
@@ -33,11 +44,13 @@ public:
 	void send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * bp);
 	int set_sock_option(int listenSocket);
+	int set_port(int port);
 private:
 
-	int 	serverSock, newServerSock, _port;
-	std::vector<pthread_t> list_of_clients;
+	int 	serverSock, _port;
+	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
+	static MultiThreadServer* m_pInstance;
 	
 };
 

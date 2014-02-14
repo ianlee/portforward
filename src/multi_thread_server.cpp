@@ -72,7 +72,7 @@ void MultiThreadServer::listen_for_clients()
 
 int MultiThreadServer::accept_client()
 {
-	struct client_data* data=(client_data*)malloc(sizeof(client_data));
+	
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
 	int sServerSock;
@@ -81,9 +81,8 @@ int MultiThreadServer::accept_client()
 		fprintf(stderr, "Can't accept client\n");
 		exit(1);
 	}
-	data->socket = sServerSock;
-	strcpy(data->client_addr, inet_ntoa(client.sin_addr));
-	list_of_clients.push_back(data);
+	
+	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }
@@ -108,7 +107,8 @@ printf("recv %d\n", socket);
 			break;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
-	pthread_exit(NULL);
+			ClientData::Instance()->removeClient(socket);
+			pthread_exit(NULL);
 			break;
 		}
 	}
@@ -140,12 +140,13 @@ void * MultiThreadServer::process_client(void * args)
 	printf("socket created                %d\n", sock);
 	char buf[BUFLEN];
 	MultiThreadServer* mServer = MultiThreadServer::Instance();
-
+//while loop
 	mServer->recv_msgs(sock, buf);
 	printf("Received: %s\n", buf);	
 
 	printf("Sending: %s\n", buf);
 	mServer->send_msgs(sock, buf);	
+//end while loop
 	return (void*)0;
 
 }
