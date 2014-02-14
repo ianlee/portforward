@@ -23,19 +23,14 @@
 #define TCP_PORT 7000
 #define MAXCLIENTS 1000
 
-struct client_data {
 
-	char client_addr[BUFLEN];
-	int socket;
 
-};
-
-class MultiThreadServer {
+class SelectServer {
 
 public:
-	 static MultiThreadServer* Instance();
+	 static SelectServer* Instance();
 
-	MultiThreadServer(int port);
+	SelectServer(int port);
 	int run();
 	int create_socket();
 	int bind_socket();
@@ -48,9 +43,9 @@ public:
 private:
 
 	int 	serverSock, _port;
-	std::vector<client_data*> list_of_clients;
+//	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
-	static MultiThreadServer* m_pInstance;
+	static SelectServer* m_pInstance;
 	
 };
 

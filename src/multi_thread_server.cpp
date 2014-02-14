@@ -140,13 +140,13 @@ void * MultiThreadServer::process_client(void * args)
 	printf("socket created                %d\n", sock);
 	char buf[BUFLEN];
 	MultiThreadServer* mServer = MultiThreadServer::Instance();
-//while loop
-	mServer->recv_msgs(sock, buf);
-	printf("Received: %s\n", buf);	
+	while (! ClientData::Instance()->empty()){
+		mServer->recv_msgs(sock, buf);
+		printf("Received: %s\n", buf);	
 
-	printf("Sending: %s\n", buf);
-	mServer->send_msgs(sock, buf);	
-//end while loop
+		printf("Sending: %s\n", buf);
+		mServer->send_msgs(sock, buf);	
+	}
 	return (void*)0;
 
 }
