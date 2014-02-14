@@ -102,7 +102,7 @@ int Client::recv_msgs(int socket, char * buf)
 	int bytes_read = 0, total_bytes_read = 0;
 	int bytes_to_read = BUFLEN;
 
-	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < BUFLEN)
+	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
 		buf += bytes_read;
 		bytes_to_read -= bytes_read;
