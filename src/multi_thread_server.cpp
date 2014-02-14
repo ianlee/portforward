@@ -30,7 +30,7 @@ int MultiThreadServer::run()
 		pthread_join(tids[i], NULL);
 	
 	pthread_exit(0);
-	
+	close(serverSock);
 	return 0;
 }
 
