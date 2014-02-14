@@ -31,14 +31,24 @@ void Client::child_client_process(int client_num, int times_sent)
 	int clientSock = create_socket();
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	clientSock = connect_to_server(clientSock, _host);
+<<<<<<< HEAD
 //send_msgs(clientSock, sendBuf);
 	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
 	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes " << client_num << std::endl;
+=======
+send_msgs(clientSock, sendBuf);
+//	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes" << std::endl;
+	//std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes"<< client_num << std::endl;
+>>>>>>> c2fe1425ced9fb96291c9bc205aada469b335c1e
 
 //recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
 	close(clientSock);
+<<<<<<< HEAD
 
+=======
+	//fflush(stdout);
+>>>>>>> c2fe1425ced9fb96291c9bc205aada469b335c1e
 	exit(0);
 }
 
@@ -101,7 +111,7 @@ int Client::recv_msgs(int socket, char * buf)
 	int bytes_read = 0, total_bytes_read = 0;
 	int bytes_to_read = BUFLEN;
 
-	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < BUFLEN)
+	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
 		buf += bytes_read;
 		bytes_to_read -= bytes_read;

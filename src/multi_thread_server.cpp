@@ -13,6 +13,7 @@ MultiThreadServer* MultiThreadServer::Instance()
 
 int MultiThreadServer::run()
 {
+	int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
 	
 	serverSock = create_socket();
@@ -22,10 +23,17 @@ int MultiThreadServer::run()
 
 	for(int i = 0; i < MAXCLIENTS; i++)
 	{
+<<<<<<< HEAD
 		int sock;
 		sock = accept_client();
 		printf("socket created                %d\n", sock);
 		pthread_create(&tids[i], NULL, process_client, &sock);
+=======
+
+		socks[i] = accept_client();
+
+		pthread_create(&tids[i], NULL, process_client, (void*)&(socks[i]));
+>>>>>>> c2fe1425ced9fb96291c9bc205aada469b335c1e
 	}
 	for(int i = 0; i < MAXCLIENTS; i++)
 		pthread_join(tids[i], NULL);
@@ -68,7 +76,7 @@ void MultiThreadServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
-	listen(serverSock, MAXCLIENTS);
+	listen(serverSock, 5);
 }
 
 int MultiThreadServer::accept_client()
@@ -104,8 +112,12 @@ printf("recv %d\n", socket);
 		bp += n;
 		bytes_to_read -= n;
 		if(n == -1){
-			printf("error or no data %d %d %d\n", bytes_to_read, n, socket);
+			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
+			break;
+		} else if (n == 0){
+			printf("socket was gracefully closed by other side %d\n",socket);
+	pthread_exit(NULL);
 			break;
 		}
 	}
@@ -122,11 +134,11 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 	
 	// Set buffer length to send or receive to BUFLEN.
 	value = BUFLEN;
-	/*if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
+	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
-		perror("setsockopt failed\n");*/
+		perror("setsockopt failed\n");
 
 	return listenSocket;
 
@@ -134,7 +146,7 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 void * MultiThreadServer::process_client(void * args)
 {	
 	int sock = *((int*) args);
-	
+	printf("socket created                %d\n", sock);
 	char buf[BUFLEN];
 	MultiThreadServer* mServer = MultiThreadServer::Instance();
 
@@ -142,9 +154,14 @@ void * MultiThreadServer::process_client(void * args)
 	printf("Received: %s\n", buf);	
 
 	printf("Sending: %s\n", buf);
+<<<<<<< HEAD
 	mServer->send_msgs(sock, buf);
 	close(sock);	
 	pthread_exit(NULL);
+=======
+	mServer->send_msgs(sock, buf);	
+
+>>>>>>> c2fe1425ced9fb96291c9bc205aada469b335c1e
 }
 int MultiThreadServer::set_port(int port){
 	_port = port;
