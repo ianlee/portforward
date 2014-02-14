@@ -17,7 +17,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#define BUFLEN 80
+#define BUFLEN 255
 #define TCP_PORT 7000
 #define MAXCLIENTS 10
 
@@ -45,7 +45,7 @@ public:
 	int set_port(int port);
 private:
 
-	int 	serverSock, newServerSock, _port;
+	int 	serverSock, _port;
 	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
 	static MultiThreadServer* m_pInstance;
