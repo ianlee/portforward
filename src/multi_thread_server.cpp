@@ -24,14 +24,14 @@ int MultiThreadServer::run()
 	{
 		int sock;
 		sock = accept_client();
+printf("socket created                %d\n", sock);
 		pthread_create(&tids[i], NULL, process_client, &sock);
 	}
 	for(int i = 0; i < MAXCLIENTS; i++)
 		pthread_join(tids[i], NULL);
 	
 	pthread_exit(0);
-	close(newServerSock);
-	close(serverSock);
+	
 	return 0;
 }
 
@@ -76,17 +76,17 @@ int MultiThreadServer::accept_client()
 	struct client_data* data=(client_data*)malloc(sizeof(client_data));
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
-	
-	if ((newServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
+	int sServerSock;
+	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
 	{
 		fprintf(stderr, "Can't accept client\n");
 		exit(1);
 	}
-	data->socket = newServerSock;
+	data->socket = sServerSock;
 	strcpy(data->client_addr, inet_ntoa(client.sin_addr));
 	list_of_clients.push_back(data);
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
-	return newServerSock;
+	return sServerSock;
 }
 
 void MultiThreadServer::send_msgs(int socket, char * data)
@@ -97,11 +97,19 @@ void MultiThreadServer::send_msgs(int socket, char * data)
 int MultiThreadServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
-	while ((n = recv (socket, bp, bytes_to_read, 0)) < BUFLEN)
+printf("recv %d\n", socket);
+	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
+		printf("%d %d /n", n, bytes_to_read);
 		bp += n;
 		bytes_to_read -= n;
+		if(n == -1){
+			printf("error or no data %d %d %d\n", bytes_to_read, n, socket);
+			printf("error %d\n",errno);
+			break;
+		}
 	}
+printf("end recv %d\n", socket);
 	return newServerSock;
 }
 
@@ -114,11 +122,11 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 	
 	// Set buffer length to send or receive to BUFLEN.
 	value = BUFLEN;
-	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
+	/*if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
-		perror("setsockopt failed\n");
+		perror("setsockopt failed\n");*/
 
 	return listenSocket;
 

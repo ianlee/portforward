@@ -6,7 +6,7 @@ int Client::run()
 {	
 	//Create multiple processes and each process will be a single client essentially
 
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < 10; i++)
 	{
 		switch(fork())
 		{

@@ -18,7 +18,7 @@
 #include <sys/wait.h>
 
 #define SERVER_TCP_PORT		7000	// Default port
-#define BUFLEN			255  	// Buffer length
+#define BUFLEN			255 	// Buffer length
 #define MAX_CONNECT		10000	// Max number of connections to server
 
 class Client {
