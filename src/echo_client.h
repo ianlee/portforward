@@ -19,14 +19,14 @@
 
 #define SERVER_TCP_PORT		7000	// Default port
 #define BUFLEN			255 	// Buffer length
-#define MAX_CONNECT		10000	// Max number of connections to server
+#define MAX_CONNECT		1000	// Max number of connections to server
 
 class Client {
 
 public:
 	Client(char * host, int port, int t_sent);
 	int run();
-	int child_client_process(int client_num, int times_sent);
+	void child_client_process(int client_num, int times_sent);
 	int create_socket();
 	void wait_for_client_processes();
 	int connect_to_server(int socket, char * host);

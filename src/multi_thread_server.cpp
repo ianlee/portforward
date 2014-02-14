@@ -23,9 +23,7 @@ int MultiThreadServer::run()
 
 	for(int i = 0; i < MAXCLIENTS; i++)
 	{
-
 		socks[i] = accept_client();
-
 		pthread_create(&tids[i], NULL, process_client, (void*)&(socks[i]));
 	}
 	for(int i = 0; i < MAXCLIENTS; i++)
@@ -115,7 +113,7 @@ printf("recv %d\n", socket);
 		}
 	}
 printf("end recv %d\n", socket);
-	return newServerSock;
+	return socket;
 }
 
 int MultiThreadServer::set_sock_option(int listenSocket)
@@ -149,6 +147,7 @@ void * MultiThreadServer::process_client(void * args)
 	printf("Sending: %s\n", buf);
 	mServer->send_msgs(sock, buf);	
 	return (void*)0;
+
 }
 int MultiThreadServer::set_port(int port){
 	_port = port;
