@@ -3,6 +3,7 @@
 int main(int argc, char **argv)
 {
 	int port;
+
 	switch(argc)
 	{
 		case 1:
@@ -16,6 +17,7 @@ int main(int argc, char **argv)
 			exit(1);
 	}
 	MultiThreadServer* server = MultiThreadServer::Instance();
+	server->set_port(port);
 	server->run();
 	return 0;
 }
