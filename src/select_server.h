@@ -2,7 +2,9 @@
 #define SELECT_SERVER_H
 
 #include "client_data.h"
+#include "blocking_queue.h"
 
+#include <atomic>
 #include <iostream>
 #include <vector>
 #include <stdio.h>
@@ -22,6 +24,7 @@
 #define BUFLEN 255
 #define TCP_PORT 7000
 #define MAXCLIENTS 1000
+#define NUMTHREADS 10
 
 
 
@@ -47,6 +50,15 @@ private:
 	static void * process_client(void * args);
 	static SelectServer* m_pInstance;
 	
+	blocking_queue<int> fd_queue;
+	
+	
+	int maxfd;
+	int maxi;
+	std::atomic<int> nready;
+	int client[MAXCLIENTS];
+	fd_set allset;
+	fd_set rset;
 };
 
 #endif

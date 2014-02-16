@@ -16,20 +16,67 @@ int SelectServer::run()
 	int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
 	
+	
+	for(int i = 0; i < NUMTHREADS; i++)
+	{
+		pthread_create(&tids[i], NULL, process_client, NULL);
+	}
+	
+	
+	
 	serverSock = create_socket();
 	serverSock = bind_socket();
 	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
 
-	for(int i = 0; i < MAXCLIENTS; i++)
-	{
-		socks[i] = accept_client();
-		pthread_create(&tids[i], NULL, process_client, (void*)&(socks[i]));
+	maxfd = serverSock;
+	maxi = -1;
+	(i = 0; i < MAXCLIENTS; i++){
+		client[i] = -1;   
 	}
-	for(int i = 0; i < MAXCLIENTS; i++)
-		pthread_join(tids[i], NULL);
+	FD_ZERO(&allset);
+   	FD_SET(listen_sd, &allset);	
+	while(true){
+		rset = allset;
+		nready = select ( maxfd + 1, &rset, NULL, NULL, NULL);
+		if (FD_ISSET(listen_sd, &rset)) {
+			//new connection
+			int sock = accept_client();
+			for (i = 0; i < MAXCLIENTS; i++){
+				if (client[i] < 0){
+					client[i] = sock;	// save descriptor
+					break;
+            	}
+			}
+			if (i == FD_SETSIZE){
+				printf ("Too many clients\n");
+        		break;
+    		}
+			FD_SET (sock, &allset);     // add new descriptor to set
+			if (sock > maxfd){
+				maxfd = sock;	// for select
+			}
+			if (i > maxi){
+				maxi = i;	// new max index in client[] array
+			}
+			if (--nready <= 0){
+				continue;
+			}
+		}
+		for (i = 0; i <= maxi; i++){	// check all clients for data
+     		int sockfd;
+			if ((sockfd = client[i]) < 0){
+				continue;
+			}
+			if (FD_ISSET(sockfd, &rset)) {
+				fd_queue.push(sockfd, 100000);
+         		if (--nready <= 0){
+					break;        // no more readable descriptors
+				}
+			}
+     	}
 	
-	pthread_exit(0);
+	}
 	close(serverSock);
 	return 0;
 }
@@ -108,7 +155,14 @@ printf("recv %d\n", socket);
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
-			pthread_exit(NULL);
+			close(socket);
+			FD_CLR(socket, &allset);
+			for (int i =0; i< maxi; ++i){
+				if(client[i]==socket){
+					client[i] = -1;
+				}
+			}
+			
 			break;
 		}
 	}
@@ -136,17 +190,16 @@ int SelectServer::set_sock_option(int listenSocket)
 }
 void * SelectServer::process_client(void * args)
 {	
-	int sock = *((int*) args);
-	printf("socket created                %d\n", sock);
+	int sock;
+	fd_queue.pop(sock);
 	char buf[BUFLEN];
 	SelectServer* mServer = SelectServer::Instance();
-	while (! ClientData::Instance()->empty()){
-		mServer->recv_msgs(sock, buf);
-		printf("Received: %s\n", buf);	
-
-		printf("Sending: %s\n", buf);
-		mServer->send_msgs(sock, buf);	
-	}
+	
+	mServer->recv_msgs(sock, buf);
+	printf("Received: %s\n", buf);	
+	mServer->send_msgs(sock, buf);	
+					            				
+	
 	return (void*)0;
 
 }
