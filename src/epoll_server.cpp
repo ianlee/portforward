@@ -50,30 +50,7 @@ int EpollServer::run()
 	while(true){
 		
 		nready = epoll_wait (epoll_fd, events, EPOLL_QUEUE_LEN, -1);
-		/*if (FD_ISSET(listen_sd, &rset)) {
-			//new connection
-			int sock = accept_client();
-			for (i = 0; i < MAXCLIENTS; i++){
-				if (client[i] < 0){
-					client[i] = sock;	// save descriptor
-					break;
-            	}
-			}
-			if (i == FD_SETSIZE){
-				printf ("Too many clients\n");
-        		break;
-    		}
-			FD_SET (sock, &allset);     // add new descriptor to set
-			if (sock > maxfd){
-				maxfd = sock;	// for select
-			}
-			if (i > maxi){
-				maxi = i;	// new max index in client[] array
-			}
-			if (--nready <= 0){
-				continue;
-			}
-		}*/
+		
 		for (i = 0; i <= maxi; i++){	// check all clients for data
      		
 			// Case 1: Error condition
@@ -165,14 +142,14 @@ int EpollServer::accept_client()
 	}
 	
 	// Make the fd_new non-blocking
-	if (fcntl (sServerSock, F_SETFL, O_NONBLOCK | fcntl(sServerSock, F_GETFL, 0)) == -1) 
-		SystemFatal("fcntl");
-	
+	if (fcntl (sServerSock, F_SETFL, O_NONBLOCK | fcntl(sServerSock, F_GETFL, 0)) == -1) {
+		fprintf(stderr,"fcntl\n");
+	}
 	// Add the new socket descriptor to the epoll loop
 	event.data.fd = sServerSock;
-	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) 
-		SystemFatal ("epoll_ctl");
-	
+	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) {
+		fprintf(stderr,"epoll_ctl\n");
+	}
 	
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
