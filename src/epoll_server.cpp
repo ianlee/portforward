@@ -1,17 +1,17 @@
-#include "select_server.h"
+#include "epoll_server.h"
 
-SelectServer::SelectServer(int port) : _port(port) {}
+EpollServer::EpollServer(int port) : _port(port) {}
 
-SelectServer* SelectServer::m_pInstance = NULL;
-SelectServer* SelectServer::Instance()
+EpollServer* EpollServer::m_pInstance = NULL;
+EpollServer* EpollServer::Instance()
 {
 	if (!m_pInstance)   // Only allow one instance of class to be generated.
-		m_pInstance = new SelectServer(TCP_PORT);
+		m_pInstance = new EpollServer(TCP_PORT);
 	return m_pInstance;
 }
 
 
-int SelectServer::run()
+int EpollServer::run()
 {
 	int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
@@ -28,52 +28,62 @@ int SelectServer::run()
 	serverSock = bind_socket();
 	serverSock = set_sock_option(serverSock);
 	listen_for_clients();
-
+	
+	// Make the server listening socket non-blocking
+    if (fcntl (serverSock, F_SETFL, O_NONBLOCK | fcntl (serverSock, F_GETFL, 0)) == -1) 
+		SystemFatal("fcntl");
+		
 	maxfd = serverSock;
 	maxi = -1;
 	(i = 0; i < MAXCLIENTS; i++){
 		client[i] = -1;   
 	}
-	FD_ZERO(&allset);
-   	FD_SET(listen_sd, &allset);	
+	epoll_fd = epoll_create(EPOLL_QUEUE_LEN);
+    if (epoll_fd == -1) 
+		SystemFatal("epoll_create");
+	// Add the server socket to the epoll event loop
+	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
+	event.data.fd = serverSock;
+	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
+		SystemFatal("epoll_ctl");
+	
 	while(true){
-		rset = allset;
-		nready = select ( maxfd + 1, &rset, NULL, NULL, NULL);
-		if (FD_ISSET(listen_sd, &rset)) {
-			//new connection
-			int sock = accept_client();
-			for (i = 0; i < MAXCLIENTS; i++){
-				if (client[i] < 0){
-					client[i] = sock;	// save descriptor
-					break;
-            	}
-			}
-			if (i == FD_SETSIZE){
-				printf ("Too many clients\n");
-        		break;
-    		}
-			FD_SET (sock, &allset);     // add new descriptor to set
-			if (sock > maxfd){
-				maxfd = sock;	// for select
-			}
-			if (i > maxi){
-				maxi = i;	// new max index in client[] array
-			}
-			if (--nready <= 0){
-				continue;
-			}
-		}
+		
+		nready = epoll_wait (epoll_fd, events, EPOLL_QUEUE_LEN, -1);
+		
 		for (i = 0; i <= maxi; i++){	// check all clients for data
-     		int sockfd;
+     		
+			// Case 1: Error condition
+	    	if (events[i].events & (EPOLLHUP | EPOLLERR)) {
+				fputs("epoll: EPOLLERR", stderr);
+				int sock = events[i].data.fd
+				close(sock);
+				ClientData::Instance()->removeClient(socket);
+				continue;
+	    	}
+	    	assert (events[i].events & EPOLLIN);
+
+	    	// Case 2: Server is receiving a connection request
+	    	if (events[i].data.fd == serverSock) {
+				int sock = accept_client();				
+				continue;
+	    	}
+
+	    		// Case 3: One of the sockets has read data
+			fd_queue.push(events[i].data.fd, 100000);
+	    	
+			
+			
+			/*int sockfd;
 			if ((sockfd = client[i]) < 0){
 				continue;
 			}
 			if (FD_ISSET(sockfd, &rset)) {
-				fd_queue.push(sockfd, 100000);
+				
          		if (--nready <= 0){
 					break;        // no more readable descriptors
 				}
-			}
+			}*/
      	}
 	
 	}
@@ -81,7 +91,7 @@ int SelectServer::run()
 	return 0;
 }
 
-int SelectServer::create_socket()
+int EpollServer::create_socket()
 {
 	int sd;
 	// Create the socket
@@ -92,7 +102,7 @@ int SelectServer::create_socket()
 	return sd;
 }
 
-int SelectServer::bind_socket()
+int EpollServer::bind_socket()
 {
 	struct	sockaddr_in server;
 
@@ -110,36 +120,49 @@ int SelectServer::bind_socket()
 	return serverSock;
 }
 
-void SelectServer::listen_for_clients()
+void EpollServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
 	listen(serverSock, 5);
 }
 
-int SelectServer::accept_client()
+int EpollServer::accept_client()
 {
 	
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
 	int sServerSock;
-	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
-	{
-		fprintf(stderr, "Can't accept client\n");
-		exit(1);
+	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1){
+		if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			fprintf(stderr, "Can't accept client\n");
+			return 0;
+		}
+		
 	}
+	
+	// Make the fd_new non-blocking
+	if (fcntl (sServerSock, F_SETFL, O_NONBLOCK | fcntl(sServerSock, F_GETFL, 0)) == -1) {
+		fprintf(stderr,"fcntl\n");
+	}
+	// Add the new socket descriptor to the epoll loop
+	event.data.fd = sServerSock;
+	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) {
+		fprintf(stderr,"epoll_ctl\n");
+	}
+	
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }
 
-void SelectServer::send_msgs(int socket, char * data)
+void EpollServer::send_msgs(int socket, char * data)
 {
 	send(socket, data, BUFLEN, 0);
 }
 
-int SelectServer::recv_msgs(int socket, char * bp)
+int EpollServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
 printf("recv %d\n", socket);
@@ -156,7 +179,6 @@ printf("recv %d\n", socket);
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
-			FD_CLR(socket, &allset);
 			for (int i =0; i< maxi; ++i){
 				if(client[i]==socket){
 					client[i] = -1;
@@ -170,7 +192,7 @@ printf("end recv %d\n", socket);
 	return socket;
 }
 
-int SelectServer::set_sock_option(int listenSocket)
+int EpollServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
 	int value = 1;
@@ -188,11 +210,11 @@ int SelectServer::set_sock_option(int listenSocket)
 	return listenSocket;
 
 }
-void * SelectServer::process_client(void * args)
+void * EpollServer::process_client(void * args)
 {	
 	int sock;
 	char buf[BUFLEN];
-	SelectServer* mServer = SelectServer::Instance();
+	EpollServer* mServer = EpollServer::Instance();
 	
 	while(1){
 		fd_queue.pop(sock);
@@ -204,7 +226,7 @@ void * SelectServer::process_client(void * args)
 	return (void*)0;
 
 }
-int SelectServer::set_port(int port){
+int EpollServer::set_port(int port){
 	_port = port;
 	return 1;
 }
