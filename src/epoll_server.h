@@ -1,5 +1,5 @@
-#ifndef SELECT_SERVER_H
-#define SELECT_SERVER_H
+#ifndef EPOLL_SERVER_H
+#define EPOLL_SERVER_H
 
 #include "client_data.h"
 #include "blocking_queue.h"
@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/epoll.h>
 
 #define BUFLEN 255
 #define TCP_PORT 7000
@@ -28,12 +29,12 @@
 
 
 
-class SelectServer {
+class EpollServer {
 
 public:
-	 static SelectServer* Instance();
+	 static EpollServer* Instance();
 
-	SelectServer(int port);
+	EpollServer(int port);
 	int run();
 	int create_socket();
 	int bind_socket();
@@ -48,7 +49,7 @@ private:
 	int 	serverSock, _port;
 //	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
-	static SelectServer* m_pInstance;
+	static EpollServer* m_pInstance;
 	
 	blocking_queue<int> fd_queue;
 	
@@ -56,9 +57,7 @@ private:
 	int maxfd;
 	int maxi;
 	std::atomic<int> nready;
-	int client[MAXCLIENTS];
-	fd_set allset;
-	fd_set rset;
+	struct epoll_event events[MAXCLIENTS], event;
 };
 
 #endif

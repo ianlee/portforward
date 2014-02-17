@@ -1,9 +1,11 @@
 #include "multi_thread_server.h"
+#include "select_thread_server.h"
+#include "epoll_server.h"
 void* printThread(void * args);
 int main(int argc, char **argv)
 {
 	int port;
-
+	int serverType = 0;
 	switch(argc)
 	{
 		case 1:
@@ -13,12 +15,22 @@ int main(int argc, char **argv)
 			port = atoi(argv[1]);
 			break;
 		default:
-			fprintf(stderr, "Usage: %s [port]\n", argv[0]);
+			fprintf(stderr, "Usage: %s [servertype] [port]\n", argv[0]);
 			exit(1);
 	}
-	MultiThreadServer* server = MultiThreadServer::Instance();
-
-
+	
+	switch(serverType){
+		case 1:
+			MultiThreadServer* server = MultiThreadServer::Instance();
+			break;
+		case 2:
+			SelectServer* server = SelectServer::Instance();
+			break;
+		case 3:
+		default:
+			EpollServer* server = EpollServer::Instance();
+			break;
+	}
 	char filename[] = "test/tests.txt";
 	ClientData::Instance()->setFile(filename);
 
