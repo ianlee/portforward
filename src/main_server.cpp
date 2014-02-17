@@ -1,11 +1,15 @@
 #include "multi_thread_server.h"
-#include "select_thread_server.h"
+#include "select_server.h"
 #include "epoll_server.h"
 void* printThread(void * args);
 int main(int argc, char **argv)
 {
 	int port;
-	int serverType = 0;
+	int serverType = 2;
+	MultiThreadServer* server1;
+	SelectServer* server2;
+	EpollServer* server3;
+
 	switch(argc)
 	{
 		case 1:
@@ -19,26 +23,33 @@ int main(int argc, char **argv)
 			exit(1);
 	}
 	
-	switch(serverType){
-		case 1:
-			MultiThreadServer* server = MultiThreadServer::Instance();
-			break;
-		case 2:
-			SelectServer* server = SelectServer::Instance();
-			break;
-		case 3:
-		default:
-			EpollServer* server = EpollServer::Instance();
-			break;
-	}
+	
 	char filename[] = "test/tests.txt";
 	ClientData::Instance()->setFile(filename);
 
 	pthread_t tid;
 	pthread_create(&tid, NULL, printThread, (void*)NULL);
+	
 
-	server->set_port(port);
-	server->run();
+	switch(serverType){
+		case 1:
+			server1 = MultiThreadServer::Instance();
+			server1->set_port(port);
+			server1->run();
+			break;
+		case 2:
+			server2 = SelectServer::Instance();
+			server2->set_port(port);
+			server2->run();
+			break;
+		case 3:
+		default:
+			server3 = EpollServer::Instance();
+			server3->set_port(port);
+			server3->run();
+			break;
+	}
+	
 	pthread_kill(tid, SIGTERM);
 	return 0;
 }

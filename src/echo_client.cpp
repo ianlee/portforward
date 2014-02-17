@@ -31,7 +31,7 @@ void Client::child_client_process(int client_num, int times_sent)
 	int clientSock = create_socket();
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	clientSock = connect_to_server(clientSock, _host);
-
+	if(clientSock >0){
 //send_msgs(clientSock, sendBuf);
 	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
 	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes " << client_num << std::endl;
@@ -40,7 +40,7 @@ void Client::child_client_process(int client_num, int times_sent)
 //recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
 	close(clientSock);
-
+}
 	//fflush(stdout);
 	exit(0);
 }
@@ -106,6 +106,14 @@ int Client::recv_msgs(int socket, char * buf)
 
 	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
+		if(bytes_read == -1){
+			printf("error %d %d %d\n", bytes_to_read, bytes_read, socket);
+			printf("error %d\n",errno);
+			break;
+		} else if (bytes_read == 0){
+			break;
+		}
+
 		buf += bytes_read;
 		bytes_to_read -= bytes_read;
 		total_bytes_read += bytes_read;

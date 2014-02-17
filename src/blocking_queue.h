@@ -1,3 +1,6 @@
+#ifndef BLOCKING_QUEUE_H
+#define BLOCKING_QUEUE_H
+
 #include <cstddef>
 #include <chrono>
 #include <memory>
@@ -14,6 +17,7 @@ class blocking_queue {
 public:
     typedef std::queue<T> queue_t;
     typedef typename queue_t::size_type  size_type;
+    blocking_queue(){_max_size=100;}
     explicit blocking_queue(std::size_t max_size) :_max_size(max_size), _q()
     {}
     blocking_queue(const blocking_queue&) = delete;
@@ -60,3 +64,5 @@ private:
     std::condition_variable _item_pushed_cond;
     std::condition_variable _item_popped_cond;
 };
+
+#endif

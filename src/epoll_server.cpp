@@ -15,7 +15,7 @@ int EpollServer::run()
 {
 	int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
-	
+	int i;
 	
 	for(int i = 0; i < NUMTHREADS; i++)
 	{
@@ -31,34 +31,32 @@ int EpollServer::run()
 	
 	// Make the server listening socket non-blocking
     if (fcntl (serverSock, F_SETFL, O_NONBLOCK | fcntl (serverSock, F_GETFL, 0)) == -1) 
-		SystemFatal("fcntl");
+		fprintf(stderr,"fcntl");
 		
 	maxfd = serverSock;
 	maxi = -1;
-	(i = 0; i < MAXCLIENTS; i++){
-		client[i] = -1;   
-	}
-	epoll_fd = epoll_create(EPOLL_QUEUE_LEN);
+	
+	epoll_fd = epoll_create(MAXCLIENTS);
     if (epoll_fd == -1) 
-		SystemFatal("epoll_create");
+		fprintf(stderr,"epoll_create");
 	// Add the server socket to the epoll event loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = serverSock;
 	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
-		SystemFatal("epoll_ctl");
+		fprintf(stderr,"epoll_ctl");
 	
 	while(true){
 		
-		nready = epoll_wait (epoll_fd, events, EPOLL_QUEUE_LEN, -1);
+		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
 		
 		for (i = 0; i <= maxi; i++){	// check all clients for data
      		
 			// Case 1: Error condition
 	    	if (events[i].events & (EPOLLHUP | EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
-				int sock = events[i].data.fd
+				int sock = events[i].data.fd;
 				close(sock);
-				ClientData::Instance()->removeClient(socket);
+				ClientData::Instance()->removeClient(sock);
 				continue;
 	    	}
 	    	assert (events[i].events & EPOLLIN);
@@ -70,7 +68,7 @@ int EpollServer::run()
 	    	}
 
 	    		// Case 3: One of the sockets has read data
-			fd_queue.push(events[i].data.fd, 100000);
+			fd_queue.push(events[i].data.fd, timeout);
 	    	
 			
 			
@@ -180,9 +178,9 @@ printf("recv %d\n", socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
 			for (int i =0; i< maxi; ++i){
-				if(client[i]==socket){
-					client[i] = -1;
-				}
+				//if(client[i]==socket){
+					//client[i] = -1;
+				//}
 			}
 			
 			break;
@@ -217,7 +215,7 @@ void * EpollServer::process_client(void * args)
 	EpollServer* mServer = EpollServer::Instance();
 	
 	while(1){
-		fd_queue.pop(sock);
+		mServer->fd_queue.pop(sock, mServer->timeout);
 		mServer->recv_msgs(sock, buf);
 		printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	

@@ -21,7 +21,7 @@ int ClientData::setFile(char* filename){
 }
 
 int ClientData::print(){
-	fprintf(_file,"%lu", list_of_clients.size() );
+	fprintf(_file,"clients: %lu", list_of_clients.size() );
 	return 0;
 }
 int ClientData::addClient(int socket, char* client_addr, int client_port){

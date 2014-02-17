@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -std=c++11
 LDFLAGS = -lpthread
 
 all: myprogram client
@@ -28,4 +28,4 @@ myprogram : main_server.o multi_thread_server.o client_data.o select_server.o ep
 	${CC} ${CFLAGS} main_server.o multi_thread_server.o client_data.o select_server.o epoll_server.o ${LDFLAGS} -o ../server
 
 clean:
-	rm -rf *.o a *.cpp~ *.h~
+	rm -rf *.o  *.cpp~ *.h~ ../client ../server

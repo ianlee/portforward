@@ -13,8 +13,9 @@ SelectServer* SelectServer::Instance()
 
 int SelectServer::run()
 {
-	int socks [MAXCLIENTS];
+	//int socks [MAXCLIENTS];
 	pthread_t tids[MAXCLIENTS];
+	int i;
 	
 	
 	for(int i = 0; i < NUMTHREADS; i++)
@@ -31,15 +32,15 @@ int SelectServer::run()
 
 	maxfd = serverSock;
 	maxi = -1;
-	(i = 0; i < MAXCLIENTS; i++){
+	for (i = 0; i < MAXCLIENTS; i++){
 		client[i] = -1;   
 	}
 	FD_ZERO(&allset);
-   	FD_SET(listen_sd, &allset);	
+   	FD_SET(serverSock, &allset);	
 	while(true){
 		rset = allset;
 		nready = select ( maxfd + 1, &rset, NULL, NULL, NULL);
-		if (FD_ISSET(listen_sd, &rset)) {
+		if (FD_ISSET(serverSock, &rset)) {
 			//new connection
 			int sock = accept_client();
 			for (i = 0; i < MAXCLIENTS; i++){
@@ -69,7 +70,7 @@ int SelectServer::run()
 				continue;
 			}
 			if (FD_ISSET(sockfd, &rset)) {
-				fd_queue.push(sockfd, 100000);
+				fd_queue.push(sockfd, timeout);
          		if (--nready <= 0){
 					break;        // no more readable descriptors
 				}
@@ -114,7 +115,7 @@ void SelectServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
-	listen(serverSock, 5);
+	listen(serverSock, 20);
 }
 
 int SelectServer::accept_client()
@@ -150,7 +151,7 @@ printf("recv %d\n", socket);
 		bytes_to_read -= n;
 		if(n == -1){
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
-			printf("error %d\n",errno);
+			printf("errno %d\n",errno);
 			break;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
@@ -195,7 +196,7 @@ void * SelectServer::process_client(void * args)
 	SelectServer* mServer = SelectServer::Instance();
 	
 	while(1){
-		fd_queue.pop(sock);
+		mServer->fd_queue.pop(sock, mServer->timeout);
 		mServer->recv_msgs(sock, buf);
 		printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	

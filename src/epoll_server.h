@@ -21,6 +21,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/epoll.h>
+#include <assert.h>
+#include <fcntl.h>
+
 
 #define BUFLEN 255
 #define TCP_PORT 7000
@@ -32,7 +35,8 @@
 class EpollServer {
 
 public:
-	 static EpollServer* Instance();
+	std::chrono::milliseconds timeout= std::chrono::milliseconds(300000);
+	static EpollServer* Instance();
 
 	EpollServer(int port);
 	int run();
@@ -53,7 +57,7 @@ private:
 	
 	blocking_queue<int> fd_queue;
 	
-	
+	int epoll_fd;
 	int maxfd;
 	int maxi;
 	std::atomic<int> nready;

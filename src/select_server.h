@@ -31,6 +31,8 @@
 class SelectServer {
 
 public:
+	std::chrono::milliseconds timeout= std::chrono::milliseconds(300000);
+
 	 static SelectServer* Instance();
 
 	SelectServer(int port);
@@ -59,6 +61,7 @@ private:
 	int client[MAXCLIENTS];
 	fd_set allset;
 	fd_set rset;
+
 };
 
 #endif
