@@ -13,8 +13,8 @@ EpollServer* EpollServer::Instance()
 
 int EpollServer::run()
 {
-	int socks [MAXCLIENTS];
-	pthread_t tids[MAXCLIENTS];
+	//int socks [MAXCLIENTS];
+	pthread_t tids[NUMTHREADS];
 	int i;
 	
 	for(int i = 0; i < NUMTHREADS; i++)
@@ -122,7 +122,7 @@ void EpollServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
-	listen(serverSock, 5);
+	listen(serverSock, SOMAXCONN);
 }
 
 int EpollServer::accept_client()
@@ -166,27 +166,24 @@ int EpollServer::recv_msgs(int socket, char * bp)
 printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
-		printf("%d %d /n", n, bytes_to_read);
-		bp += n;
-		bytes_to_read -= n;
+		
 		if(n == -1){
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
+			ClientData::Instance()->removeClient(socket);
+			close(socket);
 			break;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
-			for (int i =0; i< maxi; ++i){
-				//if(client[i]==socket){
-					//client[i] = -1;
-				//}
-			}
-			
 			break;
 		}
+		printf("%d %d /n", n, bytes_to_read);
+		bp += n;
+		bytes_to_read -= n;
 	}
-printf("end recv %d\n", socket);
+	printf("end recv %d\n", socket);
 	return socket;
 }
 
