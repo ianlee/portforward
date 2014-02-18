@@ -16,28 +16,40 @@ ClientData::~ClientData(){
 }
 
 int ClientData::setFile(char* filename){
-	_file = fopen(filename,"a");
+	_file = fopen(filename,"a+");
 	return 0;
 }
 
 int ClientData::print(){
-	fprintf(_file,"clients: %lu", list_of_clients.size() );
-	return 0;
+	_mutex.lock();
+	fprintf(_file,"clients: %lu\n", list_of_clients.size() );
+	_mutex.unlock();
+	fflush(_file);
+	return list_of_clients.size();
 }
 int ClientData::addClient(int socket, char* client_addr, int client_port){
 	struct client_data tempData;
 	tempData.socket=socket;
 	memcpy(tempData.client_addr,client_addr, strlen( client_addr));
 	tempData.client_port = client_port;
+	_mutex.lock();
 	list_of_clients.insert(std::pair<int, client_data>(socket, tempData));
+	_mutex.unlock();
 	return 0;
 }
 int ClientData::removeClient(int socket){
+	_mutex.lock();
 	list_of_clients.erase(socket);
+	_mutex.unlock();
 	return 0;
 }
 int ClientData::empty(){
-	return list_of_clients.empty();
+	int empty;
+	_mutex.lock();
+	empty = list_of_clients.empty();
+	_mutex.unlock();
+	return empty;
+
 }
 
 

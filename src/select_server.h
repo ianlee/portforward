@@ -24,7 +24,7 @@
 #define BUFLEN 255
 #define TCP_PORT 7000
 #define MAXCLIENTS 1000
-#define NUMTHREADS 10
+#define NUMTHREADS 2
 
 
 

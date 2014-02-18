@@ -6,7 +6,7 @@ int Client::run()
 {	
 	//Create multiple processes and each process will be a single client essentially
 
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < MAX_CONNECT; i++)
 	{
 		switch(fork())
 		{
@@ -33,9 +33,10 @@ void Client::child_client_process(int client_num, int times_sent)
 	clientSock = connect_to_server(clientSock, _host);
 	if(clientSock >0){
 //send_msgs(clientSock, sendBuf);
-	std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
-	std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes " << client_num << std::endl;
-
+	for(int i = 0; i<50; ++i){
+		std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
+		std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes " << client_num << recvBuf << std::endl;
+	}
 
 //recv_msgs(clientSock, recvBuf);
 	std::cout << "Closing client " << client_num << " socket" << std::endl;
@@ -118,5 +119,6 @@ int Client::recv_msgs(int socket, char * buf)
 		bytes_to_read -= bytes_read;
 		total_bytes_read += bytes_read;
 	}
+	total_bytes_read += bytes_read;
 	return total_bytes_read;
 }

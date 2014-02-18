@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <map>
+#include <mutex>
 
 
 #define BUFLEN 255
@@ -38,6 +39,7 @@ private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;
 	static ClientData* m_pInstance;
+	std::mutex _mutex;
 
 };
 

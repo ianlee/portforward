@@ -50,14 +50,14 @@ int main(int argc, char **argv)
 			break;
 	}
 	
-	pthread_kill(tid, SIGTERM);
+//	pthread_kill(tid, SIGTERM);
 	return 0;
 }
 
 void* printThread(void * args){
 	
 	while(1){
-		sleep(1000);
+		sleep(1);
 		ClientData::Instance()->print();
 	}
 	return (void*)0;

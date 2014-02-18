@@ -47,12 +47,12 @@ int SelectServer::run()
 				if (client[i] < 0){
 					client[i] = sock;	// save descriptor
 					break;
-            	}
+            			}
 			}
 			if (i == FD_SETSIZE){
 				printf ("Too many clients\n");
-        		break;
-    		}
+        			break;
+    			}
 			FD_SET (sock, &allset);     // add new descriptor to set
 			if (sock > maxfd){
 				maxfd = sock;	// for select
@@ -65,17 +65,17 @@ int SelectServer::run()
 			}
 		}
 		for (i = 0; i <= maxi; i++){	// check all clients for data
-     		int sockfd;
+     			int sockfd;
 			if ((sockfd = client[i]) < 0){
 				continue;
 			}
 			if (FD_ISSET(sockfd, &rset)) {
 				fd_queue.push(sockfd, timeout);
-         		if (--nready <= 0){
+	         		if (--nready <= 0){
 					break;        // no more readable descriptors
 				}
 			}
-     	}
+     		}
 	
 	}
 	close(serverSock);
@@ -115,7 +115,7 @@ void SelectServer::listen_for_clients()
 {
 	// Listen for connections
 	// queue up to 10000 connect requests
-	listen(serverSock, 20);
+	listen(serverSock, 5);
 }
 
 int SelectServer::accept_client()
@@ -143,16 +143,23 @@ void SelectServer::send_msgs(int socket, char * data)
 int SelectServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
-printf("recv %d\n", socket);
+	printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
-		printf("%d %d /n", n, bytes_to_read);
-		bp += n;
-		bytes_to_read -= n;
+
 		if(n == -1){
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("errno %d\n",errno);
-			break;
+			ClientData::Instance()->removeClient(socket);
+			close(socket);
+			FD_CLR(socket, &allset);
+			for (int i =0; i< maxi; ++i){
+				if(client[i]==socket){
+					client[i] = -1;
+					break;
+				}
+			}
+			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
@@ -161,14 +168,18 @@ printf("recv %d\n", socket);
 			for (int i =0; i< maxi; ++i){
 				if(client[i]==socket){
 					client[i] = -1;
+					break;
 				}
 			}
 			
-			break;
+			return -1;
 		}
+		printf("bytes read and to read %d %d /n", n, bytes_to_read);
+		bp += n;
+		bytes_to_read -= n;
 	}
-printf("end recv %d\n", socket);
-	return socket;
+	printf("end recv %d\n",socket);
+	return 0;
 }
 
 int SelectServer::set_sock_option(int listenSocket)
@@ -196,9 +207,15 @@ void * SelectServer::process_client(void * args)
 	SelectServer* mServer = SelectServer::Instance();
 	
 	while(1){
+		printf("size of queue: %lu\n",mServer->fd_queue.size());
 		mServer->fd_queue.pop(sock, mServer->timeout);
-		mServer->recv_msgs(sock, buf);
-		printf("Received: %s\n", buf);	
+
+		printf("fd socket from queue%d\n", sock);
+		printf("size of queue:%lu after pop\n", mServer->fd_queue.size());
+		if(mServer->recv_msgs(sock, buf)<0){
+			continue;
+		}
+		//printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	
 	}		            				
 	

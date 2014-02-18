@@ -83,6 +83,7 @@ int MultiThreadServer::accept_client()
 	}
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
+	//printf("size of client data: %d\n", ClientData::Instance()->print());
 	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }

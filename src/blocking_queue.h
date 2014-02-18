@@ -55,6 +55,7 @@ public:
             _q.pop();
         }        
         _item_popped_cond.notify_one();
+
         return true;
     }
 private:
