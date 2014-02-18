@@ -14,7 +14,7 @@ SelectServer* SelectServer::Instance()
 int SelectServer::run()
 {
 	//int socks [MAXCLIENTS];
-	pthread_t tids[MAXCLIENTS];
+	pthread_t tids[NUMTHREADS];
 	int i;
 	
 	
