@@ -207,11 +207,13 @@ void * SelectServer::process_client(void * args)
 	SelectServer* mServer = SelectServer::Instance();
 	
 	while(1){
-		printf("size of queue: %lu\n",mServer->fd_queue.size());
+
 		mServer->fd_queue.pop(sock, mServer->timeout);
 
 		printf("fd socket from queue%d\n", sock);
-		printf("size of queue:%lu after pop\n", mServer->fd_queue.size());
+		if(!ClientData::Instance()->has(sock)){
+			continue;
+		}
 		if(mServer->recv_msgs(sock, buf)<0){
 			continue;
 		}

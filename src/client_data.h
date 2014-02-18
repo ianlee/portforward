@@ -35,6 +35,7 @@ public:
 	int removeClient(int socket);
 	int setFile(char* filename);
  	int empty();
+	int has(int sock);
 private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;

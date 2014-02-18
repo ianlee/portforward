@@ -5,7 +5,7 @@ void* printThread(void * args);
 int main(int argc, char **argv)
 {
 	int port;
-	int serverType = 2;
+	int serverType = 3;
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;

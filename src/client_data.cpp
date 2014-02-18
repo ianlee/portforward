@@ -51,6 +51,9 @@ int ClientData::empty(){
 	return empty;
 
 }
+int ClientData::has(int sock){
+	return list_of_clients.count(sock);
+}
 
 
 

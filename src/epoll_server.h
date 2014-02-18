@@ -28,7 +28,7 @@
 #define BUFLEN 255
 #define TCP_PORT 7000
 #define MAXCLIENTS 1000
-#define NUMTHREADS 2
+#define NUMTHREADS 1
 
 
 
@@ -60,7 +60,7 @@ private:
 	int epoll_fd;
 	int maxfd;
 	int maxi;
-	std::atomic<int> nready;
+	int nready;
 	struct epoll_event events[MAXCLIENTS], event;
 };
 
