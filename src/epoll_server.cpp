@@ -31,58 +31,46 @@ int EpollServer::run()
 
 	// Make the server listening socket non-blocking
 	if (fcntl (serverSock, F_SETFL, O_NONBLOCK | fcntl (serverSock, F_GETFL, 0)) == -1) 
-		fprintf(stderr,"fcntl");
+		fprintf(stderr,"fcntl\n");
 	listen_for_clients();	
 	maxfd = serverSock;
 	maxi = -1;
 	
 	epoll_fd = epoll_create(MAXCLIENTS);
 	if (epoll_fd == -1) 
-		fprintf(stderr,"epoll_create");
+		fprintf(stderr,"epoll_create\n");
 	// Add the server socket to the epoll event loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = serverSock;
 	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
-		fprintf(stderr,"epoll_ctl");
+		fprintf(stderr,"epoll_ctl\n");
 	
 	while(true){
 		
 		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
-		printf("epoll after wait");
-		for (i = 0; i <= maxi; i++){	// check all clients for data
-     		
-			// Case 1: Error condition
-	    		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
+		for (i = 0; i < nready; i++){	// check all clients for data
+
+		// Case 1: Error condition
+    		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
 				int sock = events[i].data.fd;
 				close(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
-	    		}
-	    		assert (events[i].events & EPOLLIN);
+    		}
+    		assert (events[i].events & EPOLLIN);
 
-		    	// Case 2: Server is receiving a connection request
-		    	if (events[i].data.fd == serverSock) {
-				int sock = accept_client();				
+	    	// Case 2: Server is receiving a connection request
+	    	if (events[i].data.fd == serverSock) {
+				accept_client();				
 				continue;
-	    		}
+    		}
 
-	    		// Case 3: One of the sockets has read data
+    		// Case 3: One of the sockets has read data
+
 			fd_queue.push(events[i].data.fd, timeout);
-	    	
-			
-			
-			/*int sockfd;
-			if ((sockfd = client[i]) < 0){
-				continue;
-			}
-			if (FD_ISSET(sockfd, &rset)) {
-				
-         		if (--nready <= 0){
-					break;        // no more readable descriptors
-				}
-			}*/
-     		}
+
+ 		}
 	
 	}
 	close(serverSock);
@@ -163,7 +151,6 @@ void EpollServer::send_msgs(int socket, char * data)
 int EpollServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
-printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
 		
@@ -179,11 +166,10 @@ printf("recv %d\n", socket);
 			close(socket);
 			break;
 		}
-		printf("%d %d /n", n, bytes_to_read);
 		bp += n;
 		bytes_to_read -= n;
 	}
-	printf("end recv %d\n", socket);
+
 	return socket;
 }
 
@@ -214,10 +200,8 @@ void * EpollServer::process_client(void * args)
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
 		mServer->recv_msgs(sock, buf);
-		printf("Received: %s\n", buf);	
-		mServer->send_msgs(sock, buf);	
+		mServer->send_msgs(sock, buf);
 	}		            				
-	
 	return (void*)0;
 
 }
