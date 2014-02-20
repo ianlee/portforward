@@ -19,7 +19,7 @@
 
 #define SERVER_TCP_PORT		7000	// Default port
 #define BUFLEN			255 	// Buffer length
-#define MAX_CONNECT		1	// Max number of connections to server
+#define MAX_CONNECT		100	// Max number of connections to server
 
 class Client {
 

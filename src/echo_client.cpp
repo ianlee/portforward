@@ -71,8 +71,8 @@ int Client::connect_to_server(int socket, char * host)
 {
 	struct sockaddr_in server;
 	struct hostent	*hostptr;
-	char **pptr;
-	char str[16];
+
+
 
 	bzero((char *)&server, sizeof(struct sockaddr_in));
 	server.sin_family = AF_INET;
@@ -91,7 +91,7 @@ int Client::connect_to_server(int socket, char * host)
 		return 0;
 	}
 //	printf("Connected:    Server Name: %s\n", hostptr->h_name);
-	pptr = hostptr->h_addr_list;
+	//hostptr->h_addr_list;
 //	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
 	return socket;
 }
