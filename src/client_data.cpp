@@ -254,7 +254,7 @@ int ClientData::setRtt(int socket){
 	int rtt = -1;
 	
 	_mutex.lock();
-	std::map<int,client_data>::iterator data = list_of_clients.find(sock);
+	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients->end()){
 		if(data->second.last_time){
