@@ -13,6 +13,7 @@
 --			  int ClientData::removeClient(int socket)
 --			  int ClientData::empty()
 --			  int ClientData::has(int sock)
+--            int ClientData::setRtt(int sock)
 --
 -- DATE: 2014/02/21
 --
