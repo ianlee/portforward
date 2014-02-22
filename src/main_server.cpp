@@ -25,35 +25,34 @@ void* printThread(void * args);
 ----------------------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
-	int port;
+	int port = TCP_PORT;
 	int serverType = 3;
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;
+	char filename[] = "test/tests.txt";
 
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
-			
+			case 'p':
+				port= optarg;
+				break;
+			case 't':
+				serverType = optarg;
+				break;
+			case 'f':
+				filename = optarg;
+				break;
+			case '?':
+			default:
+				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename]\n", argv[0]);
+				exit(1);
 		}
 	}
 	
-	switch(argc)
-	{
-		case 1:
-			port = TCP_PORT;
-			break;
-		case 2:
-			port = atoi(argv[1]);
-			break;
-		default:
-			fprintf(stderr, "Usage: %s [servertype] [port]\n", argv[0]);
-			exit(1);
-	}
-	
-	
-	char filename[] = "test/tests.txt";
+	//set filename
 	ClientData::Instance()->setFile(filename);
-
+	//create stat printing thread
 	pthread_t tid;
 	pthread_create(&tid, NULL, printThread, (void*)NULL);
 	
