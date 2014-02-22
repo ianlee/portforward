@@ -23,11 +23,9 @@
 --
 -- REVISIONS: (Date and Description)
 --
--- DESIGNER: Ian Lee
---			 Luke Tao
+-- DESIGNER: Ian Lee, Luke Tao
 --
--- PROGRAMMER: Ian Lee
---			   Luke Tao
+-- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- NOTES: Multi-thread server class tested by the echo client.
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -44,7 +42,7 @@
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: MultiThreadServer::MultiThreadServer(int port)
---									     		   int port - server port
+--						   int port - server port
 --
 -- RETURNS:  N/A
 --
@@ -252,8 +250,8 @@ int MultiThreadServer::accept_client()
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: void MultiThreadServer::send_msgs(int socket, char * data)
---										  		int socket - server sock
---										  		char * data - data that the server will send back to the client
+--						int socket - server sock
+--						char * data - data that the server will send back to the client
 --
 -- RETURNS:  void
 --
@@ -276,8 +274,8 @@ void MultiThreadServer::send_msgs(int socket, char * data)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int MultiThreadServer::recv_msgs(int socket, char * bp)
---										 	   int socket - server socket
---										 	   char * bp - data that the server will receive from the client
+--					       int socket - server socket
+--					       char * bp - data that the server will receive from the client
 --
 -- RETURNS:  Socket Descriptor
 --
@@ -319,7 +317,7 @@ printf("end recv %d\n", socket);
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int MultiThreadServer::set_sock_option(int listenSocket)
---											   		 int listenSocket - listening socket
+--						     int listenSocket - listening socket
 --
 -- RETURNS:  N/A
 --
@@ -390,7 +388,7 @@ void * MultiThreadServer::process_client(void * args)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int MultiThreadServer::set_port(int port)
---											  int port - server port specified
+--					      int port - server port specified
 --
 -- RETURNS:  N/A
 --
