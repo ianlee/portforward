@@ -109,7 +109,7 @@ int EpollServer::bind_socket()
 void EpollServer::listen_for_clients()
 {
 	// Listen for connections
-	// queue up to 10000 connect requests
+	
 	listen(serverSock, SOMAXCONN);
 }
 

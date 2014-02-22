@@ -114,7 +114,7 @@ int SelectServer::bind_socket()
 void SelectServer::listen_for_clients()
 {
 	// Listen for connections
-	// queue up to 10000 connect requests
+	
 	listen(serverSock, 5);
 }
 

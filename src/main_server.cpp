@@ -1,6 +1,7 @@
 #include "multi_thread_server.h"
 #include "select_server.h"
 #include "epoll_server.h"
+#include <time.h>
 void* printThread(void * args);
 int main(int argc, char **argv)
 {
@@ -53,11 +54,19 @@ int main(int argc, char **argv)
 //	pthread_kill(tid, SIGTERM);
 	return 0;
 }
-
-void* printThread(void * args){
+void getArgs(int argc, char** argv){
+	while ((c = getopt (argc, argv, "pt:")) != -1){
+         switch (c){
+		}
+	}
 	
+}
+void* printThread(void * args){
+	struct timespec timeout;
+	timeout.tv_sec=0;
+	timeout.tv_nsec=500000000; // 0.5seconds
 	while(1){
-		sleep(1);
+		nano_sleep(timeout, NULL);
 		ClientData::Instance()->print();
 	}
 	return (void*)0;

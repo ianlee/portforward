@@ -21,10 +21,12 @@ int ClientData::setFile(char* filename){
 }
 
 int ClientData::print(){
+	unsigned long size;
 	_mutex.lock();
-	fprintf(_file,"clients: %lu\n", list_of_clients.size() );
+	size =  list_of_clients.size() ;
 	_mutex.unlock();
-	fflush(_file);
+	fprintf(_file,"clients: %lu\n", size);
+	//fflush(_file);
 	return list_of_clients.size();
 }
 int ClientData::addClient(int socket, char* client_addr, int client_port){
@@ -52,7 +54,10 @@ int ClientData::empty(){
 
 }
 int ClientData::has(int sock){
-	return list_of_clients.count(sock);
+	_mutex.lock();
+	int rtn = list_of_clients.count(sock);
+	_mutex.unlock();
+	return rtn;
 }
 
 
