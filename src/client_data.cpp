@@ -93,7 +93,7 @@ ClientData::~ClientData(){
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::setFile(char* filename){
 	_file = fopen(filename,"a+");
-	if(_file<0) return -1;
+	if(_file==NULL) return -1;
 	return 0;
 }
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -111,14 +111,22 @@ int ClientData::setFile(char* filename){
 --
 -- RETURNS:  Number of clients in the list.
 --
--- NOTES: Print number of clients in the specified file pointer.
+-- NOTES: Print number of clients and the avg RTT of clients in the specified file pointer.
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::print(){
 	unsigned long size;
+	double avgRtt;
+	double totalRtt;
+	
 	_mutex.lock();
 	size =  list_of_clients.size() ;
+	
+	for(std::map<int,client_data>::iterator it = list_of_clients.begin(); it!=list_of_clients.end(); ++it){
+		totalRtt += it->second.rtt;
+	}
 	_mutex.unlock();
-	fprintf(_file,"clients: %lu\n", size);
+	avgRtt = totalRtt / size;
+	fprintf(_file,"clients: %lu \tRTT: %lf\n", size, avgRtt);
 	//fflush(_file);
 	return list_of_clients.size();
 }
@@ -224,6 +232,43 @@ int ClientData::has(int sock){
 	_mutex.unlock();
 	return rtn;
 }
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setRtt
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int ClientData::setRtt(int socket)
+--                            int socket - socket for which rtt should be calculated for.
+--
+-- RETURNS:  calculated ReturnTripTime in milliseconds.  if it has no previous time value, returns -1
+--
+-- NOTES: calculates the RTT if previous timeval last_time exists.  Sets last_time to current time
+----------------------------------------------------------------------------------------------------------------------*/
+int ClientData::setRtt(int socket){
+	int rtt = -1;
+	
+	_mutex.lock();
+	std::map<int,client_data>::iterator data = list_of_clients.find(sock);
+	_mutex.unlock();
+	if(data != list_of_clients->end()){
+		if(data->second.last_time){
+			struct timeval currTime;
+			gettimeofday(&currTime,NULL);
+			//calc rtt
+			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv.usec);
+			data->second.rtt = rtt;
+		}
+		data->second.last_time = currTime;
+		
+	}
+	
+	return rtt;
+}
 
 

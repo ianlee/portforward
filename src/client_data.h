@@ -20,7 +20,8 @@ struct client_data {
 	char client_addr[BUFLEN];
 	int client_port;
 	int socket;
-	
+	struct timeval last_time;
+	int rtt;
 };
 
 
@@ -36,6 +37,7 @@ public:
 	int setFile(char* filename);
  	int empty();
 	int has(int sock);
+	int setRtt();
 private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;

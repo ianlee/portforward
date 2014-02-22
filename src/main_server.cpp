@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	SelectServer* server2;
 	EpollServer* server3;
 	char filename[] = "test/tests.txt";
-
+	//get args
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
 			case 'p':
@@ -55,12 +55,15 @@ int main(int argc, char **argv)
 	}
 	
 	//set filename
-	ClientData::Instance()->setFile(filename);
+	if(ClientData::Instance()->setFile(filename) <0 ){
+		fprintf(stderr, "File could not be opened: %s\n", filename);
+		exit(1);
+	}
 	//create stat printing thread
 	pthread_t tid;
 	pthread_create(&tid, NULL, printThread, (void*)NULL);
 	
-
+	//start server
 	switch(serverType){
 		case 1:
 			server1 = MultiThreadServer::Instance();
