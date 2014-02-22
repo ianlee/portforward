@@ -87,7 +87,7 @@ ClientData::~ClientData(){
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int ClientData::setFile(char* filename)
---									  char* filename - file name specified
+--				      char* filename - file name specified
 --
 -- RETURNS:  0 on success
 --
@@ -133,9 +133,9 @@ int ClientData::print(){
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int ClientData::addClient(int socket, char* client_addr, int client_port)
---										int socket        - client socket
---										char* client_addr - client address struct
---										int client_port   - client port
+--					int socket        - client socket
+--					char* client_addr - client address struct
+--					int client_port   - client port
 --
 -- RETURNS:  0 on sucess
 --
@@ -211,7 +211,7 @@ int ClientData::empty(){
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int ClientData::has(int sock)
---			  					  int sock - client socket passed in
+--			  	  int sock - client socket passed in
 --
 -- RETURNS:  true if the map contains the client data whose socket is matched to.
 --
