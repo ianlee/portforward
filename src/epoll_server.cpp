@@ -23,11 +23,9 @@
 --
 -- REVISIONS: (Date and Description)
 --
--- DESIGNER: Ian Lee
---			 Luke Tao
+-- DESIGNER: Ian Lee, Luke Tao
 --
--- PROGRAMMER: Ian Lee
---			   Luke Tao
+-- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- NOTES: Epoll server class tested by the echo client.
 ----------------------------------------------------------------------------------------------------------------------*/
