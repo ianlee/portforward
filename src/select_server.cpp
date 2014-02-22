@@ -148,8 +148,8 @@ int SelectServer::recv_msgs(int socket, char * bp)
 	{
 
 		if(n == -1){
-			printf("error %d %d %d\n", bytes_to_read, n, socket);
-			printf("errno %d\n",errno);
+			
+			printf("errno %d on socket %d\n",errno, socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
 			FD_CLR(socket, &allset);
