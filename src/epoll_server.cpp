@@ -1,8 +1,74 @@
 #include "epoll_server.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE: epoll_server.cpp - Hold the code for the epoll server used by the echo client. 
+--
+-- PROGRAM: server
+--
+-- FUNCTIONS: EpollServer::EpollServer(int port)
+--			  EpollServer* EpollServer::Instance()
+--			  int EpollServer::run()
+--			  int EpollServer::create_socket()
+--			  int EpollServer::bind_socket()
+--			  void EpollServer::listen_for_clients()
+--			  int EpollServer::accept_client()
+--			  void EpollServer::send_msgs(int socket, char * data)
+--			  int EpollServer::recv_msgs(int socket, char * bp)
+--			  int EpollServer::set_sock_option(int listenSocket)
+--			  void * EpollServer::process_client(void * args)
+--			  int EpollServer::set_port(int port)
+--			  
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- NOTES: Epoll server class tested by the echo client.
+----------------------------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: EpollServer (constructor)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: EpollServer::EpollServer(int port)
+--				       int port - server port
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Epoll Server constructor that will initialize the server port.
+----------------------------------------------------------------------------------------------------------------------*/
 EpollServer::EpollServer(int port) : _port(port) {}
 
 EpollServer* EpollServer::m_pInstance = NULL;
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: Instance
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: EpollServer* EpollServer::Instance()
+--
+-- RETURNS:  Returns the instance of class generated.
+--
+-- NOTES: Creates an instance of epoll server.
+----------------------------------------------------------------------------------------------------------------------*/
 EpollServer* EpollServer::Instance()
 {
 	if (!m_pInstance)   // Only allow one instance of class to be generated.
@@ -10,7 +76,23 @@ EpollServer* EpollServer::Instance()
 	return m_pInstance;
 }
 
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: run
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::run()
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Main epoll server function
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::run()
 {
 	//int socks [MAXCLIENTS];
@@ -77,6 +159,23 @@ int EpollServer::run()
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: create_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::create_socket()
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Creates a socket and returns the socket descriptor on successful creation.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::create_socket()
 {
 	int sd;
@@ -88,6 +187,23 @@ int EpollServer::create_socket()
 	return sd;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: bind_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::bind_socket()
+--
+-- RETURNS:  Server Socket Descriptor
+--
+-- NOTES: Function that binds an address to the server socket and returns the server socket.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::bind_socket()
 {
 	struct	sockaddr_in server;
@@ -106,6 +222,23 @@ int EpollServer::bind_socket()
 	return serverSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: listen_for_clients
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void EpollServer::listen_for_clients()
+--
+-- RETURNS:  void
+--
+-- NOTES: Sets the number of clients the server will handle requests to.
+----------------------------------------------------------------------------------------------------------------------*/
 void EpollServer::listen_for_clients()
 {
 	// Listen for connections
@@ -113,6 +246,23 @@ void EpollServer::listen_for_clients()
 	listen(serverSock, SOMAXCONN);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: accept_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::accept_client()
+--
+-- RETURNS:  New Socket Descriptor
+--
+-- NOTES: Function that blocks until a client connection request comes in. It will add the client to the list.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::accept_client()
 {
 	
@@ -143,11 +293,49 @@ int EpollServer::accept_client()
 	return sServerSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: send_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void EpollServer::send_msgs(int socket, char * data)
+--					  int socket - server sock
+--					  char * data - data that the server will send back to the client
+--
+-- RETURNS:  void
+--
+-- NOTES: Send Messages function used by the epoll server.
+----------------------------------------------------------------------------------------------------------------------*/
 void EpollServer::send_msgs(int socket, char * data)
 {
 	send(socket, data, BUFLEN, 0);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: recv_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::recv_msgs(int socket, char * bp)
+--					 int socket - server socket
+--					 char * bp - data that the server will receive from the client
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Send Messages function used by the epoll server.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
@@ -176,6 +364,24 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_sock_option
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::set_sock_option(int listenSocket)
+--					       int listenSocket - listening socket
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Function that sets the listening socket options.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
@@ -194,6 +400,24 @@ int EpollServer::set_sock_option(int listenSocket)
 	return listenSocket;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: process_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void * EpollServer::process_client(void * args)
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Thread that processes the client by receiving and sending packets from the server. 
+----------------------------------------------------------------------------------------------------------------------*/
 void * EpollServer::process_client(void * args)
 {	
 	int sock;
@@ -214,9 +438,26 @@ void * EpollServer::process_client(void * args)
 	return (void*)0;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_port
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::set_port(int port)
+--					int port - server port specified
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Sets server port when starting the server.
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_port(int port){
 	_port = port;
 	return 1;
 }
-
-
