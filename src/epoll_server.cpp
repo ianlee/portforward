@@ -44,7 +44,7 @@
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: EpollServer::EpollServer(int port)
---									   int port - server port
+--				       int port - server port
 --
 -- RETURNS:  N/A
 --
@@ -307,8 +307,8 @@ int EpollServer::accept_client()
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: void EpollServer::send_msgs(int socket, char * data)
---										  int socket - server sock
---										  char * data - data that the server will send back to the client
+--					  int socket - server sock
+--					  char * data - data that the server will send back to the client
 --
 -- RETURNS:  void
 --
@@ -331,8 +331,8 @@ void EpollServer::send_msgs(int socket, char * data)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int EpollServer::recv_msgs(int socket, char * bp)
---										 int socket - server socket
---										 char * bp - data that the server will receive from the client
+--					 int socket - server socket
+--					 char * bp - data that the server will receive from the client
 --
 -- RETURNS:  Socket Descriptor
 --
@@ -378,7 +378,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int EpollServer::set_sock_option(int listenSocket)
---											   int listenSocket - listening socket
+--					       int listenSocket - listening socket
 --
 -- RETURNS:  N/A
 --
@@ -453,7 +453,7 @@ void * EpollServer::process_client(void * args)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int EpollServer::set_port(int port)
---										int port - server port specified
+--					int port - server port specified
 --
 -- RETURNS:  N/A
 --
