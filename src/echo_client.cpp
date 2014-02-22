@@ -39,9 +39,9 @@
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: Client::Client(char * host, int port, int t_sent)
---							 char * host - host of the server the client is trying to connect to
---							 int port - port of the server the client is trying to connect to
---							 int t_sent - number specified by the user how many times the client will send messages
+--			     char * host - host of the server the client is trying to connect to
+--			     int port - port of the server the client is trying to connect to
+--			     int t_sent - number specified by the user how many times the client will send messages
 --
 -- RETURNS:  N/A
 --
@@ -103,8 +103,8 @@ int Client::run()
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: void Client::child_client_process(int client_num, int times_sent)
---												int client_num - client process ID number
---												int times_sent - number of times the client will send 
+--						int client_num - client process ID number
+--						int times_sent - number of times the client will send 
 --																 messages to the server
 --
 --
@@ -201,8 +201,8 @@ int Client::create_socket()
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int Client::connect_to_server(int socket, char * host)
---											int socket - client socket passed in
---											char * host - server host IP
+--					    int socket - client socket passed in
+--					    char * host - server host IP
 --
 -- RETURNS:  0 if failure to connect to server, client socket on success
 --
@@ -249,8 +249,8 @@ int Client::connect_to_server(int socket, char * host)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int Client::send_msgs(int socket, char * data)
---									int socket - client socket that the data is sending from
---									char * data - data that the client is sending to the server
+--				    int socket - client socket that the data is sending from
+--				    char * data - data that the client is sending to the server
 --
 -- RETURNS:  Returns how many bytes the client sent to the server.
 --
@@ -273,8 +273,8 @@ int Client::send_msgs(int socket, char * data)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int Client::recv_msgs(int socket, char * buf)
---									int socket - client socket passed in
---									char * buf - data that the client is receiving from the server
+--				    int socket - client socket passed in
+--				    char * buf - data that the client is receiving from the server
 --
 -- RETURNS:  Returns the total bytes read.
 --
