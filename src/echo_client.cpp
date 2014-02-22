@@ -120,7 +120,13 @@ void Client::child_client_process(int client_num, int times_sent)
 //send_msgs(clientSock, sendBuf);
 	for(int i = 0; i<50; ++i){
 		std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
-		std::cout << "Received " << recv_msgs(clientSock, recvBuf) << " bytes " << client_num << recvBuf << std::endl;
+		int rtn = recv_msgs(clientSock, recvBuf);
+		if(rtn){
+			std::cout << "Received " << rtn << " bytes " << client_num << recvBuf << std::endl;
+		}
+		else{
+			break;
+		}
 	}
 
 //recv_msgs(clientSock, recvBuf);
@@ -286,11 +292,13 @@ int Client::recv_msgs(int socket, char * buf)
 	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
 		if(bytes_read == -1){
-			printf("error %d %d %d\n", bytes_to_read, bytes_read, socket);
-			printf("error %d\n",errno);
-			break;
+			
+			printf("error %d %d\n",errno,socket);
+			
+			return -1;
 		} else if (bytes_read == 0){
-			break;
+			
+			return -1;
 		}
 
 		buf += bytes_read;
