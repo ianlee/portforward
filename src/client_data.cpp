@@ -18,11 +18,9 @@
 --
 -- REVISIONS: (Date and Description)
 --
--- DESIGNER: Ian Lee
---			 Luke Tao
+-- DESIGNER: Ian Lee, Luke Tao
 --
--- PROGRAMMER: Ian Lee
---			   Luke Tao
+-- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- NOTES: Used by other server type classes, this class handles the list of clients in an organized fashion.
 ----------------------------------------------------------------------------------------------------------------------*/
