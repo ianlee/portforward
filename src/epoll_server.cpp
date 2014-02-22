@@ -345,22 +345,25 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	{
 		
 		if(n == -1){
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				break;
+			}
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
-			break;
+			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
-			break;
+			return -1;
 		}
 		bp += n;
 		bytes_to_read -= n;
 	}
 
-	return socket;
+	return 0;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -425,8 +428,14 @@ void * EpollServer::process_client(void * args)
 	
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
-		mServer->recv_msgs(sock, buf);
-		mServer->send_msgs(sock, buf);
+		if(!ClientData::Instance()->has(sock)){
+			continue;
+		}
+		if(mServer->recv_msgs(sock, buf)<0){
+			continue;
+		}
+		//printf("Received: %s\n", buf);	
+		mServer->send_msgs(sock, buf);	
 	}		            				
 	return (void*)0;
 
