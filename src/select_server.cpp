@@ -23,11 +23,9 @@
 --
 -- REVISIONS: (Date and Description)
 --
--- DESIGNER: Ian Lee
---			 Luke Tao
+-- DESIGNER: Ian Lee, Luke Tao
 --
--- PROGRAMMER: Ian Lee
---			   Luke Tao
+-- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- NOTES: Select server class tested by the echo client.
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -44,7 +42,7 @@
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: SelectServer::SelectServer(int port)
---									     int port - server port
+--					 int port - server port
 --
 -- RETURNS:  N/A
 --
@@ -299,8 +297,8 @@ int SelectServer::accept_client()
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: void SelectServer::send_msgs(int socket, char * data)
---										  int socket - server sock
---										  char * data - data that the server will send back to the client
+--					   int socket - server sock
+--					   char * data - data that the server will send back to the client
 --
 -- RETURNS:  void
 --
@@ -323,8 +321,8 @@ void SelectServer::send_msgs(int socket, char * data)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int SelectServer::recv_msgs(int socket, char * bp)
---										 int socket - server socket
---										 char * bp - data that the server will receive from the client
+--					  int socket - server socket
+--					  char * bp - data that the server will receive from the client
 --
 -- RETURNS:  Socket Descriptor
 --
@@ -384,7 +382,7 @@ int SelectServer::recv_msgs(int socket, char * bp)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int SelectServer::set_sock_option(int listenSocket)
---											   int listenSocket - listening socket
+--						int listenSocket - listening socket
 --
 -- RETURNS:  N/A
 --
@@ -463,7 +461,7 @@ void * SelectServer::process_client(void * args)
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int SelectServer::set_port(int port)
---										int port - server port specified
+--					 int port - server port specified
 --
 -- RETURNS:  N/A
 --
