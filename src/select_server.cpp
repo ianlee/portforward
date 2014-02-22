@@ -17,6 +17,7 @@
 --			  int SelectServer::set_sock_option(int listenSocket)
 --			  void * SelectServer::process_client(void * args)
 --			  int SelectServer::set_port(int port)
+--            int SelectServer::set_num_threads(int num);
 --			  
 --
 -- DATE: 2014/02/21
@@ -96,11 +97,11 @@ SelectServer* SelectServer::Instance()
 int SelectServer::run()
 {
 	//int socks [MAXCLIENTS];
-	pthread_t tids[NUMTHREADS];
+	pthread_t tids[_numThreads];
 	int i;
 	
 	
-	for(int i = 0; i < NUMTHREADS; i++)
+	for(int i = 0; i < _numThreads; i++)
 	{
 		pthread_create(&tids[i], NULL, process_client, NULL);
 	}
@@ -472,4 +473,25 @@ int SelectServer::set_port(int port){
 	return 1;
 }
 
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_num_threads
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::set_num_threads(int num)
+--					int num - number of worker threads server should use
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Sets server port when starting the server.
+----------------------------------------------------------------------------------------------------------------------*/
+int SelectServer::set_num_threads(int num){
+	_numThreads=_num;
+	return 1;
+}

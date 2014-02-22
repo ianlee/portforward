@@ -17,7 +17,8 @@
 --			  int EpollServer::set_sock_option(int listenSocket)
 --			  void * EpollServer::process_client(void * args)
 --			  int EpollServer::set_port(int port)
---			  
+--			  int EpollServer::set_num_threads(int num);
+--
 --
 -- DATE: 2014/02/21
 --
@@ -49,6 +50,7 @@
 -- NOTES: Epoll Server constructor that will initialize the server port.
 ----------------------------------------------------------------------------------------------------------------------*/
 EpollServer::EpollServer(int port) : _port(port) {}
+
 
 EpollServer* EpollServer::m_pInstance = NULL;
 
@@ -93,13 +95,11 @@ EpollServer* EpollServer::Instance()
 --
 -- NOTES: Main epoll server function
 ----------------------------------------------------------------------------------------------------------------------*/
-int EpollServer::run()
-{
-	//int socks [MAXCLIENTS];
-	pthread_t tids[NUMTHREADS];
+int EpollServer::run() {
+	pthread_t tids[_numThreads];
 	int i;
 	
-	for(int i = 0; i < NUMTHREADS; i++)
+	for(int i = 0; i < _numThreads; i++)
 	{
 		pthread_create(&tids[i], NULL, process_client, NULL);
 	}
@@ -459,5 +459,27 @@ void * EpollServer::process_client(void * args)
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_port(int port){
 	_port = port;
+	return 1;
+}
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_num_threads
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::set_num_threads(int num)
+--					int num - number of worker threads server should use
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Sets server port when starting the server.
+----------------------------------------------------------------------------------------------------------------------*/
+int EpollServer::set_num_threads(int num){
+	_numThreads=_num;
 	return 1;
 }

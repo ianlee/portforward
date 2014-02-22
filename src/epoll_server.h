@@ -48,9 +48,10 @@ public:
 	int recv_msgs(int socket, char * bp);
 	int set_sock_option(int listenSocket);
 	int set_port(int port);
+	int set_num_threads(int num);
 private:
 
-	int 	serverSock, _port;
+	int 	serverSock, _port, _numThreads;
 //	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
 	static EpollServer* m_pInstance;

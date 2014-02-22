@@ -27,6 +27,7 @@ int main(int argc, char **argv)
 {
 	int port = TCP_PORT;
 	int serverType = 3;
+	int numberWorkers = 10;
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;
@@ -42,6 +43,9 @@ int main(int argc, char **argv)
 				break;
 			case 'f':
 				filename = optarg;
+				break;
+			case 'n':
+				numberWorkers= optarg;
 				break;
 			case '?':
 			default:
@@ -66,12 +70,14 @@ int main(int argc, char **argv)
 		case 2:
 			server2 = SelectServer::Instance();
 			server2->set_port(port);
+			server2->set_num_threads(numberWorkers);
 			server2->run();
 			break;
 		case 3:
 		default:
 			server3 = EpollServer::Instance();
 			server3->set_port(port);
+			server3->set_num_threads(numberWorkers);
 			server3->run();
 			break;
 	}
