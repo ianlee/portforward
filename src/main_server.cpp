@@ -15,8 +15,8 @@ void* printThread(void * args);
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- INTERFACE: int main(int argc, char **argv)
---					   int argc - number of cmd-line arguments
---					   char **argv - double pointer to array of arguments
+--		       int argc - number of cmd-line arguments
+--		       char **argv - double pointer to array of arguments
 --
 -- RETURNS:  0 on success
 --
