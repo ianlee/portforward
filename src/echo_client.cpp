@@ -18,11 +18,9 @@
 --
 -- REVISIONS: (Date and Description)
 --
--- DESIGNER: Ian Lee
---			 Luke Tao
+-- DESIGNER: Ian Lee, Luke Tao
 --
--- PROGRAMMER: Ian Lee
---			   Luke Tao
+-- PROGRAMMER: Ian Lee, Luke Tao
 --
 -- NOTES: This class serves as an echo client that will test the different types of servers.
 ----------------------------------------------------------------------------------------------------------------------*/
