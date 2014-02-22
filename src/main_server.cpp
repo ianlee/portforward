@@ -2,6 +2,26 @@
 #include "select_server.h"
 #include "epoll_server.h"
 void* printThread(void * args);
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: main (server)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int main(int argc, char **argv)
+--					   int argc - number of cmd-line arguments
+--					   char **argv - double pointer to array of arguments
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Main function that parses command-line arguments and starts a type of server, depending on the user's choice.
+----------------------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
 	int port;
@@ -54,6 +74,23 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: printThread
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void* printThread(void * args)
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Thread that prints the number of clients to a file in a loop.
+----------------------------------------------------------------------------------------------------------------------*/
 void* printThread(void * args){
 	
 	while(1){
@@ -62,5 +99,3 @@ void* printThread(void * args){
 	}
 	return (void*)0;
 }
-
-

@@ -1,7 +1,72 @@
 #include "echo_client.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE: echo_client.cpp - Hold the code for the client class used by the scalable servers. 
+--
+-- PROGRAM: echo_client
+--
+-- FUNCTIONS: Client::Client(char * host, int port, int t_sent)
+--			  int Client::run()
+--			  void Client::child_client_process(int client_num, int times_sent)
+--			  void Client::wait_for_client_processes()
+--			  int Client::create_socket()
+--			  int Client::connect_to_server(int socket, char * host)
+--			  int Client::send_msgs(int socket, char * data)
+--			  int Client::recv_msgs(int socket, char * buf)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee
+--			 Luke Tao
+--
+-- PROGRAMMER: Ian Lee
+--			   Luke Tao
+--
+-- NOTES: This class serves as an echo client that will test the different types of servers.
+----------------------------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: Client (constructor)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: Client::Client(char * host, int port, int t_sent)
+--							 char * host - host of the server the client is trying to connect to
+--							 int port - port of the server the client is trying to connect to
+--							 int t_sent - number specified by the user how many times the client will send messages
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Client constructor that will initialize the server host, port, and user-defined times the packets will be
+-- sent to the server.
+----------------------------------------------------------------------------------------------------------------------*/
 Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), times_sent(t_sent) {}
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: run
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::run()
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Main echo client function that will create processes for multiple clients.
+----------------------------------------------------------------------------------------------------------------------*/
 int Client::run()
 {	
 	//Create multiple processes and each process will be a single client essentially
@@ -25,6 +90,28 @@ int Client::run()
 	std::cout << "All clients finished processing" << std::endl;
 	return 0;
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: child_client_process
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void Client::child_client_process(int client_num, int times_sent)
+--												int client_num - client process ID number
+--												int times_sent - number of times the client will send 
+--																 messages to the server
+--
+--
+-- RETURNS:  void
+--
+-- NOTES: A client process that will send and receive messages from the server for a specified amount of time.
+----------------------------------------------------------------------------------------------------------------------*/
 void Client::child_client_process(int client_num, int times_sent)
 {
 	std::cout << "Processing client " << client_num << std::endl;
@@ -46,6 +133,23 @@ void Client::child_client_process(int client_num, int times_sent)
 	exit(0);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: wait_for_client_processes
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void Client::wait_for_client_processes()
+--
+-- RETURNS:  void
+--
+-- NOTES: Waits for all client processes to finish before exiting.
+----------------------------------------------------------------------------------------------------------------------*/
 void Client::wait_for_client_processes()
 {
 	while (wait(NULL) > 0) {
@@ -55,6 +159,23 @@ void Client::wait_for_client_processes()
 	}
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: create_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::create_socket()
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Creates a socket and returns the socket descriptor on successful creation.
+----------------------------------------------------------------------------------------------------------------------*/
 int Client::create_socket()
 {
 	int sd;
@@ -67,6 +188,26 @@ int Client::create_socket()
 	return sd;
 	
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: connect_to_server
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::connect_to_server(int socket, char * host)
+--											int socket - client socket passed in
+--											char * host - server host IP
+--
+-- RETURNS:  0 if failure to connect to server, client socket on success
+--
+-- NOTES: Function that the client will try to connect to the server.
+----------------------------------------------------------------------------------------------------------------------*/
 int Client::connect_to_server(int socket, char * host)
 {
 	struct sockaddr_in server;
@@ -96,10 +237,49 @@ int Client::connect_to_server(int socket, char * host)
 	return socket;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: send_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::send_msgs(int socket, char * data)
+--									int socket - client socket that the data is sending from
+--									char * data - data that the client is sending to the server
+--
+-- RETURNS:  Returns how many bytes the client sent to the server.
+--
+-- NOTES: This function will send messages to the server with the client socket passed in.
+----------------------------------------------------------------------------------------------------------------------*/
 int Client::send_msgs(int socket, char * data)
 {
 	return send(socket, data, BUFLEN, 0);
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: recv_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::recv_msgs(int socket, char * buf)
+--									int socket - client socket passed in
+--									char * buf - data that the client is receiving from the server
+--
+-- RETURNS:  Returns the total bytes read.
+--
+-- NOTES: This function will receive messages from the server with the client socket passed in.
+----------------------------------------------------------------------------------------------------------------------*/
 int Client::recv_msgs(int socket, char * buf)
 {
 	int bytes_read = 0, total_bytes_read = 0;

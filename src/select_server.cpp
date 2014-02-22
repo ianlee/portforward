@@ -1,8 +1,76 @@
 #include "select_server.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE: select_server.cpp - Hold the code for the select server used by the echo client. 
+--
+-- PROGRAM: server
+--
+-- FUNCTIONS: SelectServer::SelectServer(int port)
+--			  SelectServer* SelectServer::Instance()
+--			  int SelectServer::run()
+--			  int SelectServer::create_socket()
+--			  int SelectServer::bind_socket()
+--			  void SelectServer::listen_for_clients()
+--			  int SelectServer::accept_client()
+--			  void SelectServer::send_msgs(int socket, char * data)
+--			  int SelectServer::recv_msgs(int socket, char * bp)
+--			  int SelectServer::set_sock_option(int listenSocket)
+--			  void * SelectServer::process_client(void * args)
+--			  int SelectServer::set_port(int port)
+--			  
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee
+--			 Luke Tao
+--
+-- PROGRAMMER: Ian Lee
+--			   Luke Tao
+--
+-- NOTES: Select server class tested by the echo client.
+----------------------------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: SelectServer (constructor)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: SelectServer::SelectServer(int port)
+--									     int port - server port
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Select Server constructor that will initialize the server port.
+----------------------------------------------------------------------------------------------------------------------*/
 SelectServer::SelectServer(int port) : _port(port) {}
 
 SelectServer* SelectServer::m_pInstance = NULL;
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: Instance
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: SelectServer* SelectServer::Instance()
+--
+-- RETURNS:  Returns the instance of class generated.
+--
+-- NOTES: Creates an instance of select server.
+----------------------------------------------------------------------------------------------------------------------*/
 SelectServer* SelectServer::Instance()
 {
 	if (!m_pInstance)   // Only allow one instance of class to be generated.
@@ -10,7 +78,23 @@ SelectServer* SelectServer::Instance()
 	return m_pInstance;
 }
 
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: run
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::run()
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Main select server function
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::run()
 {
 	//int socks [MAXCLIENTS];
@@ -82,6 +166,23 @@ int SelectServer::run()
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: create_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::create_socket()
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Creates a socket and returns the socket descriptor on successful creation.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::create_socket()
 {
 	int sd;
@@ -93,6 +194,23 @@ int SelectServer::create_socket()
 	return sd;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: bind_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::bind_socket()
+--
+-- RETURNS:  Server Socket Descriptor
+--
+-- NOTES: Function that binds an address to the server socket and returns the server socket.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::bind_socket()
 {
 	struct	sockaddr_in server;
@@ -111,6 +229,23 @@ int SelectServer::bind_socket()
 	return serverSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: listen_for_clients
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void SelectServer::listen_for_clients()
+--
+-- RETURNS:  void
+--
+-- NOTES: Sets the number of clients the server will handle requests to.
+----------------------------------------------------------------------------------------------------------------------*/
 void SelectServer::listen_for_clients()
 {
 	// Listen for connections
@@ -118,6 +253,23 @@ void SelectServer::listen_for_clients()
 	listen(serverSock, 5);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: accept_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::accept_client()
+--
+-- RETURNS:  New Socket Descriptor
+--
+-- NOTES: Function that blocks until a client connection request comes in. It will add the client to the list.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::accept_client()
 {
 	
@@ -135,11 +287,49 @@ int SelectServer::accept_client()
 	return sServerSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: send_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void SelectServer::send_msgs(int socket, char * data)
+--										  int socket - server sock
+--										  char * data - data that the server will send back to the client
+--
+-- RETURNS:  void
+--
+-- NOTES: Send Messages function used by the select server.
+----------------------------------------------------------------------------------------------------------------------*/
 void SelectServer::send_msgs(int socket, char * data)
 {
 	send(socket, data, BUFLEN, 0);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: recv_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::recv_msgs(int socket, char * bp)
+--										 int socket - server socket
+--										 char * bp - data that the server will receive from the client
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Send Messages function used by the select server.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
@@ -182,6 +372,24 @@ int SelectServer::recv_msgs(int socket, char * bp)
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_sock_option
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::set_sock_option(int listenSocket)
+--											   int listenSocket - listening socket
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Function that sets the listening socket options.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
@@ -200,6 +408,24 @@ int SelectServer::set_sock_option(int listenSocket)
 	return listenSocket;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: process_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void * SelectServer::process_client(void * args)
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Thread that processes the client by receiving and sending packets from the server. 
+----------------------------------------------------------------------------------------------------------------------*/
 void * SelectServer::process_client(void * args)
 {	
 	int sock;
@@ -224,6 +450,25 @@ void * SelectServer::process_client(void * args)
 	return (void*)0;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_port
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::set_port(int port)
+--										int port - server port specified
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Sets server port when starting the server.
+----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::set_port(int port){
 	_port = port;
 	return 1;

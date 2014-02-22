@@ -1,8 +1,76 @@
 #include "multi_thread_server.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE: multi_thread_server.cpp - Hold the code for the multi-thread server used by the echo client. 
+--
+-- PROGRAM: server
+--
+-- FUNCTIONS: MultiThreadServer::MultiThreadServer(int port)
+--			  MultiThreadServer* MultiThreadServer::Instance()
+--			  int MultiThreadServer::run()
+--			  int MultiThreadServer::create_socket()
+--			  int MultiThreadServer::bind_socket()
+--			  void MultiThreadServer::listen_for_clients()
+--			  int MultiThreadServer::accept_client()
+--			  void MultiThreadServer::send_msgs(int socket, char * data)
+--			  int MultiThreadServer::recv_msgs(int socket, char * bp)
+--			  int MultiThreadServer::set_sock_option(int listenSocket)
+--			  void * MultiThreadServer::process_client(void * args)
+--			  int MultiThreadServer::set_port(int port)
+--			  
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee
+--			 Luke Tao
+--
+-- PROGRAMMER: Ian Lee
+--			   Luke Tao
+--
+-- NOTES: Multi-thread server class tested by the echo client.
+----------------------------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: MultiThreadServer (constructor)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: MultiThreadServer::MultiThreadServer(int port)
+--									     		   int port - server port
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Multi-Thread Server constructor that will initialize the server port.
+----------------------------------------------------------------------------------------------------------------------*/
 MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
 MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: Instance
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: MultiThreadServer* MultiThreadServer::Instance()
+--
+-- RETURNS:  Returns the instance of class generated.
+--
+-- NOTES: Creates an instance of multi-thread server.
+----------------------------------------------------------------------------------------------------------------------*/
 MultiThreadServer* MultiThreadServer::Instance()
 {
 	if (!m_pInstance)   // Only allow one instance of class to be generated.
@@ -10,7 +78,23 @@ MultiThreadServer* MultiThreadServer::Instance()
 	return m_pInstance;
 }
 
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: run
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::run()
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Main multi-thread server function
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::run()
 {
 	int socks [MAXCLIENTS];
@@ -34,6 +118,23 @@ int MultiThreadServer::run()
 	return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: create_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::create_socket()
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Creates a socket and returns the socket descriptor on successful creation.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::create_socket()
 {
 	int sd;
@@ -45,6 +146,23 @@ int MultiThreadServer::create_socket()
 	return sd;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: bind_socket
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::bind_socket()
+--
+-- RETURNS:  Server Socket Descriptor
+--
+-- NOTES: Function that binds an address to the server socket and returns the server socket.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::bind_socket()
 {
 	struct	sockaddr_in server;
@@ -63,6 +181,23 @@ int MultiThreadServer::bind_socket()
 	return serverSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: listen_for_clients
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void MultiThreadServer::listen_for_clients()
+--
+-- RETURNS:  void
+--
+-- NOTES: Sets the number of clients the server will handle requests to.
+----------------------------------------------------------------------------------------------------------------------*/
 void MultiThreadServer::listen_for_clients()
 {
 	// Listen for connections
@@ -70,6 +205,23 @@ void MultiThreadServer::listen_for_clients()
 	listen(serverSock, 5);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: accept_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::accept_client()
+--
+-- RETURNS:  New Socket Descriptor
+--
+-- NOTES: Function that blocks until a client connection request comes in. It will add the client to the list.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::accept_client()
 {
 	
@@ -88,11 +240,49 @@ int MultiThreadServer::accept_client()
 	return sServerSock;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: send_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void MultiThreadServer::send_msgs(int socket, char * data)
+--										  		int socket - server sock
+--										  		char * data - data that the server will send back to the client
+--
+-- RETURNS:  void
+--
+-- NOTES: Send Messages function used by the multi-thread server.
+----------------------------------------------------------------------------------------------------------------------*/
 void MultiThreadServer::send_msgs(int socket, char * data)
 {
 	send(socket, data, BUFLEN, 0);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: recv_msgs
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::recv_msgs(int socket, char * bp)
+--										 	   int socket - server socket
+--										 	   char * bp - data that the server will receive from the client
+--
+-- RETURNS:  Socket Descriptor
+--
+-- NOTES: Send Messages function used by the multi-thread server.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
@@ -117,6 +307,24 @@ printf("end recv %d\n", socket);
 	return socket;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_sock_option
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::set_sock_option(int listenSocket)
+--											   		 int listenSocket - listening socket
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Function that sets the listening socket options.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::set_sock_option(int listenSocket)
 {
 	// Reuse address set
@@ -135,6 +343,24 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 	return listenSocket;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: process_client
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void * MultiThreadServer::process_client(void * args)
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Thread that processes the client by receiving and sending packets from the server. 
+----------------------------------------------------------------------------------------------------------------------*/
 void * MultiThreadServer::process_client(void * args)
 {	
 	int sock = *((int*) args);
@@ -151,6 +377,25 @@ void * MultiThreadServer::process_client(void * args)
 	return (void*)0;
 
 }
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: set_port
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::set_port(int port)
+--											  int port - server port specified
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Sets server port when starting the server.
+----------------------------------------------------------------------------------------------------------------------*/
 int MultiThreadServer::set_port(int port){
 	_port = port;
 	return 1;
