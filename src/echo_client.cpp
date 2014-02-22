@@ -69,7 +69,62 @@ int Client::run()
 {	
 	//Create multiple processes and each process will be a single client essentially
 
-	for(int i = 0; i < MAX_CONNECT; i++)
+	epoll_fd = epoll_create(MAXCLIENTS);
+	if (epoll_fd == -1) 
+		fprintf(stderr,"epoll_create\n");
+	// Add the server socket to the epoll event loop
+	for(int i = 0; i < MAX_CONNECT; i++){
+		//create clients and add to epoll
+		int clientSock = create_socket();
+		if (fcntl (clientSock, F_SETFL, O_NONBLOCK | fcntl (clientSock, F_GETFL, 0)) == -1) 
+			fprintf(stderr,"fcntl\n");
+		char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
+		clientSock = connect_to_server(clientSock, _host);
+		if(clientSock >0){
+			event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
+			event.data.fd = clientSock;
+			if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, clientSock, &event) == -1) 
+				fprintf(stderr,"epoll_ctl\n");
+			send_msgs(clientSock, sendBuf);
+		}
+	}
+	
+	
+	
+	
+	while(true){
+		
+		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
+		for (i = 0; i < nready; i++){	// check all clients for data
+
+		// Case 1: Error condition
+    		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
+				fputs("epoll: EPOLLERR", stderr);
+				int sock = events[i].data.fd;
+				close(sock);
+				ClientData::Instance()->removeClient(sock);
+				continue;
+    		}
+    		assert (events[i].events & EPOLLIN);
+    		// Case 2: One of the sockets has read data
+			int rtn = recv_msgs(events[i].data.fd, recvBuf);
+			if(rtn){
+				std::cout << "Received " << rtn << " bytes " << client_num << recvBuf << std::endl;
+				//do rtt calc
+			}
+			else{
+				continue;
+			}
+			
+			//do # clients calc
+			//if(count < times_sent){
+			send_msgs(events[i].data.fd, sendBuf)
+			//}
+ 		}
+	
+	}
+	
+/*	for(int i = 0; i < MAX_CONNECT; i++)
 	{
 		switch(fork())
 		{
@@ -83,7 +138,7 @@ int Client::run()
 				break;
 		}
 	}
-	wait_for_client_processes();
+	wait_for_client_processes();*/
 
 	std::cout << "All clients finished processing" << std::endl;
 	return 0;
