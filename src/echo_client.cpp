@@ -67,6 +67,8 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 ----------------------------------------------------------------------------------------------------------------------*/
 int Client::run()
 {	
+	int nready, maxfd, epoll_fd;
+	struct epoll_event events[], event;
 	//Create multiple processes and each process will be a single client essentially
 
 	epoll_fd = epoll_create(MAXCLIENTS);
