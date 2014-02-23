@@ -105,7 +105,7 @@ int Client::run()
 				fputs("epoll: EPOLLERR", stderr);
 				int sock = events[i].data.fd;
 				close(sock);
-				ClientData::Instance()->removeClient(sock);
+				//ClientData::Instance()->removeClient(sock);
 				continue;
     		}
     		assert (events[i].events & EPOLLIN);
