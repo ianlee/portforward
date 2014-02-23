@@ -22,24 +22,28 @@
 int main(int argc, char **argv)
 {
 	char *host;
-	int port, times_sent;
-
-	switch (argc)
-	{
-		case 3:
-			host = argv[1];
-			port = SERVER_TCP_PORT;
-			times_sent = atoi(argv[2]);
-			break;
-		case 4:
-			host = argv[1];
-			port = atoi(argv[2]);
-			times_sent = atoi(argv[3]);
-			break;
-		default:
-			fprintf(stderr, "Usage: %s host [port] <number of times sent>\n", argv[0]);
-			exit(1);	
+	int port = SERVER_TCP_PORT;
+	int times_sent = 10000;
+	
+	while ((c = getopt (argc, argv, "aptfn:")) != -1){
+         switch (c){
+			case 'p':
+				port= atoi(optarg);
+				break;
+			case 'a':
+				host = optarg;
+				break;
+			case 't':
+				times_sent = atoi(optarg);
+				break;
+			
+			case '?':
+			default:
+				fprintf(stderr, "Usage: %s [-a hostname] [-p port] [-t timesToSend] \n", argv[0]);
+				exit(1);
+		}
 	}
+
 	Client client(host, port, times_sent);
 	client.run();
 	return 0;

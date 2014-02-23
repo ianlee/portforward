@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	EpollServer* server3;
 	const char* filename = "test/tests.txt";
 	//get args
-	while ((c = getopt (argc, argv, "pt:")) != -1){
+	while ((c = getopt (argc, argv, "fnpt:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 				break;
 			case '?':
 			default:
-				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename] [-n numberOfWorkers]\n", argv[0]);
 				exit(1);
 		}
 	}

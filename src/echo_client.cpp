@@ -119,9 +119,9 @@ int Client::run()
     		// Case 2: One of the sockets has read data
 			int rtn = recv_msgs(sock, recvBuf);
 			if(rtn){
-				std::cout << "Received  on " << sock << ": " <<recvBuf << std::endl;
+				//std::cout << "Received  on " << sock << ": " <<recvBuf << std::endl;
 				//do rtt calc
-				ClientData::Instance()->setRtt(sock);
+				std::cout << sock << "RTT:" <<ClientData::Instance()->setRtt(sock)<< "usec" << std::endl;
 			}
 			else{
 				continue;
