@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 ----------------------------------------------------------------------------------------------------------------------*/
 
 void* printThread(void * args){
-	const struct timespec timeout = {0,500000000};
+	const struct timespec* timeout = new const struct timespec{0,500000000};
 	//timeout.tv_sec=0;
 	//timeout.tv_nsec=500000000; // 0.5seconds
 	while(1){
