@@ -368,7 +368,7 @@ void * MultiThreadServer::process_client(void * args)
 	while (! ClientData::Instance()->empty()){
 		mServer->recv_msgs(sock, buf);
 		//printf("Received: %s\n", buf);	
-		ClientData::Instance()->setRtt(sock)
+		ClientData::Instance()->setRtt(sock);
 		//printf("Sending: %s\n", buf);
 		mServer->send_msgs(sock, buf);	
 		ClientData::Instance()->recordData(sock, BUFLEN);
