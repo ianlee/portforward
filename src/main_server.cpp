@@ -36,16 +36,16 @@ int main(int argc, char **argv)
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
 			case 'p':
-				port= optarg;
+				port= atoi(optarg);
 				break;
 			case 't':
-				serverType = optarg;
+				serverType = atoi(optarg);
 				break;
 			case 'f':
 				filename = optarg;
 				break;
 			case 'n':
-				numberWorkers= optarg;
+				numberWorkers= atoi(optarg);
 				break;
 			case '?':
 			default:
