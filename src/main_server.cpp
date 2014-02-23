@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;
-	char* filename = "test/tests.txt";
+	const char* filename = "test/tests.txt";
 	//get args
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
@@ -115,7 +115,7 @@ void* printThread(void * args){
 	timeout.tv_sec=0;
 	timeout.tv_nsec=500000000; // 0.5seconds
 	while(1){
-		nano_sleep(timeout, NULL);
+		nanosleep(timeout, NULL);
 		ClientData::Instance()->print();
 	}
 	return (void*)0;
