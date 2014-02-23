@@ -25,13 +25,14 @@ void* printThread(void * args);
 ----------------------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
+	char c;
 	int port = TCP_PORT;
 	int serverType = 3;
 	int numberWorkers = 10;
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;
-	char filename[] = "test/tests.txt";
+	char* filename = "test/tests.txt";
 	//get args
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
