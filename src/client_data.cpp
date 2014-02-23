@@ -128,7 +128,7 @@ int ClientData::print(){
 	_mutex.unlock();
 	avgRtt = totalRtt / size;
 	fprintf(_file,"clients: %lu \tRTT: %lf\n", size, avgRtt);
-	//fflush(_file);
+	fflush(_file);
 	return list_of_clients.size();
 }
 /*-------------------------------------------------------------------------------------------------------------------- 
