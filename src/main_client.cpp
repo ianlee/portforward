@@ -24,6 +24,7 @@ int main(int argc, char **argv)
 	char *host;
 	int port = SERVER_TCP_PORT;
 	int times_sent = 10000;
+	char c;
 	
 	while ((c = getopt (argc, argv, "aptfn:")) != -1){
          switch (c){
