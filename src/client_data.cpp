@@ -258,8 +258,8 @@ int ClientData::setRtt(int socket){
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients.end()){
-		std::cout << "found socket for rtt " << std::endl;
-		if(data->second.last_time.tv_sec==0){
+		std::cout << "found socket for rtt " <<data->second.last_time.tv_usec<< std::endl;
+		if(data->second.last_time.tv_usec==0){
 			
 			gettimeofday(&currTime,NULL);
 			//calc rtt
