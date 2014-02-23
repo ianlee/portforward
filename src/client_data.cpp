@@ -264,6 +264,7 @@ int ClientData::setRtt(int socket){
 			//calc rtt
 			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
+			printf("RTT: %d, socket: %d",rtt, socket);
 		}
 		data->second.last_time = currTime;
 		
