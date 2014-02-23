@@ -85,14 +85,14 @@ ClientData::~ClientData(){
 --
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
--- INTERFACE: int ClientData::setFile(char* filename)
---				      char* filename - file name specified
+-- INTERFACE: int ClientData::setFile(const char* filename)
+--				      const char* filename - file name specified
 --
 -- RETURNS:  0 on success
 --
 -- NOTES: This function opens a file under the specified filename and returns 0.
 ----------------------------------------------------------------------------------------------------------------------*/
-int ClientData::setFile(char* filename){
+int ClientData::setFile(const char* filename){
 	_file = fopen(filename,"a+");
 	if(_file==NULL) return -1;
 	return 0;

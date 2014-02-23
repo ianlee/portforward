@@ -34,7 +34,7 @@ public:
 	int print();
 	int addClient(int socket, char* client_addr, int client_port);
 	int removeClient(int socket);
-	int setFile(char* filename);
+	int setFile(const char* filename);
  	int empty();
 	int has(int sock);
 	int setRtt(int sock);
