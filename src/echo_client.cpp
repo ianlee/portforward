@@ -69,10 +69,10 @@ int Client::run()
 {	
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	int nready, maxfd, epoll_fd;
-	struct epoll_event events[], event;
+	struct epoll_event events[MAX_CONNECT], event;
 	//Create multiple processes and each process will be a single client essentially
 
-	epoll_fd = epoll_create(MAXCONNECT);
+	epoll_fd = epoll_create(MAX_CONNECT);
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
 	// Add the server socket to the epoll event loop
@@ -97,7 +97,7 @@ int Client::run()
 	
 	while(true){
 		
-		nready = epoll_wait (epoll_fd, events, MAXCONNECT, -1);
+		nready = epoll_wait (epoll_fd, events, MAX_CONNECT, -1);
 		for (int i = 0; i < nready; i++){	// check all clients for data
 
 		// Case 1: Error condition
@@ -112,7 +112,7 @@ int Client::run()
     		// Case 2: One of the sockets has read data
 			int rtn = recv_msgs(events[i].data.fd, recvBuf);
 			if(rtn){
-				std::cout << "Received " << rtn << " bytes " << client_num << recvBuf << std::endl;
+				std::cout << "Received " << rtn << " bytes " << events[i].data.fd << recvBuf << std::endl;
 				//do rtt calc
 			}
 			else{
@@ -121,7 +121,7 @@ int Client::run()
 			
 			//do # clients calc
 			//if(count < times_sent){
-			send_msgs(events[i].data.fd, sendBuf)
+			send_msgs(events[i].data.fd, sendBuf);
 			//}
  		}
 	
