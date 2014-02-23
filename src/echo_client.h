@@ -1,6 +1,8 @@
 #ifndef ECHO_CLIENT_H
 #define ECHO_CLIENT_H
 
+#include "client_data.h"
+
 #include <iostream>
 #include <stdio.h>
 #include <netdb.h>
