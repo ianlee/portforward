@@ -301,7 +301,7 @@ int ClientData::setRtt(int socket){
 -- RETURNS:  total amount of data sent to this client.
 --
 ----------------------------------------------------------------------------------------------------------------------*/
-int recordData(int socket, int number){
+int ClientData::recordData(int socket, int number){
 	long total = 0;
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
