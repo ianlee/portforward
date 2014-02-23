@@ -67,11 +67,12 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 ----------------------------------------------------------------------------------------------------------------------*/
 int Client::run()
 {	
+	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	int nready, maxfd, epoll_fd;
 	struct epoll_event events[], event;
 	//Create multiple processes and each process will be a single client essentially
 
-	epoll_fd = epoll_create(MAXCLIENTS);
+	epoll_fd = epoll_create(MAXCONNECT);
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
 	// Add the server socket to the epoll event loop
@@ -80,7 +81,7 @@ int Client::run()
 		int clientSock = create_socket();
 		if (fcntl (clientSock, F_SETFL, O_NONBLOCK | fcntl (clientSock, F_GETFL, 0)) == -1) 
 			fprintf(stderr,"fcntl\n");
-		char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
+		
 		clientSock = connect_to_server(clientSock, _host);
 		if(clientSock >0){
 			event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
@@ -96,8 +97,8 @@ int Client::run()
 	
 	while(true){
 		
-		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
-		for (i = 0; i < nready; i++){	// check all clients for data
+		nready = epoll_wait (epoll_fd, events, MAXCONNECT, -1);
+		for (int i = 0; i < nready; i++){	// check all clients for data
 
 		// Case 1: Error condition
     		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
