@@ -257,12 +257,12 @@ int ClientData::setRtt(int socket){
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
-	if(data != list_of_clients->end()){
+	if(data != list_of_clients.end()){
 		if(data->second.last_time){
 			struct timeval currTime;
 			gettimeofday(&currTime,NULL);
 			//calc rtt
-			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv.usec);
+			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
 		}
 		data->second.last_time = currTime;
