@@ -85,14 +85,14 @@ ClientData::~ClientData(){
 --
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
--- INTERFACE: int ClientData::setFile(char* filename)
---				      char* filename - file name specified
+-- INTERFACE: int ClientData::setFile(const char* filename)
+--				      const char* filename - file name specified
 --
 -- RETURNS:  0 on success
 --
 -- NOTES: This function opens a file under the specified filename and returns 0.
 ----------------------------------------------------------------------------------------------------------------------*/
-int ClientData::setFile(char* filename){
+int ClientData::setFile(const char* filename){
 	_file = fopen(filename,"a+");
 	if(_file==NULL) return -1;
 	return 0;
@@ -253,16 +253,16 @@ int ClientData::has(int sock){
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::setRtt(int socket){
 	int rtt = -1;
-	
+	struct timeval currTime;
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
-	if(data != list_of_clients->end()){
-		if(data->second.last_time){
-			struct timeval currTime;
+	if(data != list_of_clients.end()){
+		if(data->second.last_time.tv_sec==0){
+			
 			gettimeofday(&currTime,NULL);
 			//calc rtt
-			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv.usec);
+			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
 		}
 		data->second.last_time = currTime;

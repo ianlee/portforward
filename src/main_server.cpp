@@ -25,27 +25,28 @@ void* printThread(void * args);
 ----------------------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
+	char c;
 	int port = TCP_PORT;
 	int serverType = 3;
 	int numberWorkers = 10;
 	MultiThreadServer* server1;
 	SelectServer* server2;
 	EpollServer* server3;
-	char filename[] = "test/tests.txt";
+	const char* filename = "test/tests.txt";
 	//get args
 	while ((c = getopt (argc, argv, "pt:")) != -1){
          switch (c){
 			case 'p':
-				port= optarg;
+				port= atoi(optarg);
 				break;
 			case 't':
-				serverType = optarg;
+				serverType = atoi(optarg);
 				break;
 			case 'f':
 				filename = optarg;
 				break;
 			case 'n':
-				numberWorkers= optarg;
+				numberWorkers= atoi(optarg);
 				break;
 			case '?':
 			default:
@@ -110,11 +111,11 @@ int main(int argc, char **argv)
 ----------------------------------------------------------------------------------------------------------------------*/
 
 void* printThread(void * args){
-	struct timespec timeout;
-	timeout.tv_sec=0;
-	timeout.tv_nsec=500000000; // 0.5seconds
+	const struct timespec timeout {0,500000000};
+	//timeout.tv_sec=0;
+	//timeout.tv_nsec=500000000; // 0.5seconds
 	while(1){
-		nano_sleep(timeout, NULL);
+		nanosleep(&timeout, NULL);
 		ClientData::Instance()->print();
 	}
 	return (void*)0;
