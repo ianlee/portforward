@@ -162,6 +162,11 @@ int ClientData::addClient(int socket, char* client_addr, int client_port){
 	tempData.socket=socket;
 	memcpy(tempData.client_addr,client_addr, strlen( client_addr));
 	tempData.client_port = client_port;
+	
+	tempData.num_request=0;
+	tempData.rtt = 0;
+	tempData.amount_data=0;
+	
 	_mutex.lock();
 	list_of_clients.insert(std::pair<int, client_data>(socket, tempData));
 	_mutex.unlock();
