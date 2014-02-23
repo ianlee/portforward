@@ -12,7 +12,7 @@
 #include <string.h>
 #include <map>
 #include <mutex>
-
+#include <sys/time.h>
 
 #define BUFLEN 255
 struct client_data {
