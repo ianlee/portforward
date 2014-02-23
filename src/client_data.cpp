@@ -184,6 +184,12 @@ int ClientData::addClient(int socket, char* client_addr, int client_port){
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::removeClient(int socket){
 	_mutex.lock();
+	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
+	_mutex.unlock();
+	if(data != list_of_clients.end()){
+		std::cout<<"Disconnected: socket:"<<socket<<"\thostname:"<< data->second.client_addr<<"\t#requests: "<< data->second.num_request<< "\t#data: "<< data->second.amount_data << std::endl;
+	}
+	_mutex.lock();
 	list_of_clients.erase(socket);
 	_mutex.unlock();
 	return 0;
@@ -272,10 +278,39 @@ int ClientData::setRtt(int socket){
 			//printf("RTT: %d, socket: %d\n",rtt, socket);
 		}
 		data->second.last_time = currTime;
-		
+		++ data->second.num_request;
 	}
 	
 	return rtt;
+}
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: recordData
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int ClientData::recordData(int socket, int number)
+--                            int socket - socket for which data should be recorded for.
+--                            int number - number of bytes sent to this client
+--
+-- RETURNS:  total amount of data sent to this client.
+--
+----------------------------------------------------------------------------------------------------------------------*/
+int recordData(int socket, int number){
+	long total = 0;
+	_mutex.lock();
+	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
+	_mutex.unlock();
+	if(data != list_of_clients.end()){
+		data->second.amount_data += number;
+		total = data->second.amount_data;
+	}
+	return total;
 }
 
 

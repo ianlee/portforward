@@ -22,6 +22,8 @@ struct client_data {
 	int socket;
 	struct timeval last_time;
 	int rtt;
+	long amount_data;
+	int num_request;
 };
 
 
@@ -38,6 +40,7 @@ public:
  	int empty();
 	int has(int sock);
 	int setRtt(int sock);
+	int recordData(int socket, int number);
 private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;
