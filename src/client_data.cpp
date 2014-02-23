@@ -14,6 +14,8 @@
 --			  int ClientData::empty()
 --			  int ClientData::has(int sock)
 --            int ClientData::setRtt(int sock)
+--            int ClientData::recordData(int socket, int number)
+--            int ClientData::getNumRequest(int socket)
 --
 -- DATE: 2014/02/21
 --
@@ -312,5 +314,29 @@ int ClientData::recordData(int socket, int number){
 	}
 	return total;
 }
-
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: getNumRequest
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int ClientData::getNumRequest(int socket)
+--                            int socket - socket for which number of requests should be returned
+--
+-- RETURNS:  number of times received data
+--
+----------------------------------------------------------------------------------------------------------------------*/
+int ClientData::getNumRequest(int socket){
+	_mutex.lock();
+	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
+	_mutex.unlock();
+	if(data != list_of_clients.end()){
+		return data->second.num_request;
+	}
+	return 0;
+}

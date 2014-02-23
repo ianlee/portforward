@@ -67,6 +67,7 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 ----------------------------------------------------------------------------------------------------------------------*/
 int Client::run()
 {	
+	int rtn;
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
 	int nready, epoll_fd;
 	struct epoll_event events[MAX_CONNECT], event;
@@ -91,7 +92,10 @@ int Client::run()
 			event.data.fd = clientSock;
 			if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, clientSock, &event) == -1) 
 				fprintf(stderr,"epoll_ctl\n");
-			send_msgs(clientSock, sendBuf);
+				
+			
+			rtn = send_msgs(clientSock, sendBuf);
+			ClientData::Instance()->reportData(clientSock, rtn);
 		}
 	}
 	
@@ -102,49 +106,39 @@ int Client::run()
 		
 		nready = epoll_wait (epoll_fd, events, MAX_CONNECT, -1);
 		for (int i = 0; i < nready; i++){	// check all clients for data
-
-		// Case 1: Error condition
+			int sock = events[i].data.fd;
+			// Case 1: Error condition
     		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
-				int sock = events[i].data.fd;
+				
 				close(sock);
-				//ClientData::Instance()->removeClient(sock);
+				ClientData::Instance()->removeClient(sock);
 				continue;
     		}
     		assert (events[i].events & EPOLLIN);
     		// Case 2: One of the sockets has read data
-			int rtn = recv_msgs(events[i].data.fd, recvBuf);
+			int rtn = recv_msgs(sock, recvBuf);
 			if(rtn){
-				std::cout << "Received " << rtn << " bytes " << events[i].data.fd << recvBuf << std::endl;
+				std::cout << "Received  on " << sock << ": " <<recvBuf << std::endl;
 				//do rtt calc
+				ClientData::Instance()->setRtt(sock);
 			}
 			else{
 				continue;
 			}
-			
-			//do # clients calc
-			//if(count < times_sent){
-			send_msgs(events[i].data.fd, sendBuf);
-			//}
+			//do # client sent calc
+			if(getNumRequest(sock) < times_sent){
+				rtn = send_msgs(sock, sendBuf);
+				ClientData::Instance()->reportData(sock, rtn);
+			} else {
+				//met quota for sending packets to server. close connection
+				ClientData::Instance()->removeClient(sock);
+				close(sock);
+			}
  		}
 	
 	}
 	
-/*	for(int i = 0; i < MAX_CONNECT; i++)
-	{
-		switch(fork())
-		{
-			case -1:
-				std::cerr << "An error has occurred" << std::endl;
-				break;
-			case 0:
-				child_client_process(i, times_sent);
-				return 0;
-			default:
-				break;
-		}
-	}
-	wait_for_client_processes();*/
 
 	std::cout << "All clients finished processing" << std::endl;
 	return 0;
@@ -296,6 +290,8 @@ int Client::connect_to_server(int socket, char * host)
 		perror("connect");
 		return 0;
 	}
+	
+	ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
 //	printf("Connected:    Server Name: %s\n", hostptr->h_name);
 	//hostptr->h_addr_list;
 //	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
@@ -347,25 +343,29 @@ int Client::send_msgs(int socket, char * data)
 ----------------------------------------------------------------------------------------------------------------------*/
 int Client::recv_msgs(int socket, char * buf)
 {
-	int bytes_read = 0, total_bytes_read = 0;
-	int bytes_to_read = BUFLEN;
-
-	while ((bytes_read = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
+	int total_read=0;
+	int n, bytes_to_read = BUFLEN;
+	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
-		if(bytes_read == -1){
-			
-			printf("error %d %d\n",errno,socket);
-			
+		
+		if(n == -1){
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				break;
+			}
+			printf("error %d %d %d\n", bytes_to_read, n, socket);
+			printf("error %d\n",errno);
+			ClientData::Instance()->removeClient(socket);
+			close(socket);
 			return -1;
-		} else if (bytes_read == 0){
-			
+		} else if (n == 0){
+			printf("socket was gracefully closed by other side %d\n",socket);
+			ClientData::Instance()->removeClient(socket);
+			close(socket);
 			return -1;
 		}
-
-		buf += bytes_read;
-		bytes_to_read -= bytes_read;
-		total_bytes_read += bytes_read;
+		bp += n;
+		bytes_to_read -= n;
 	}
-	total_bytes_read += bytes_read;
-	return total_bytes_read;
+
+	return 1;
 }

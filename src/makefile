@@ -4,10 +4,10 @@ LDFLAGS = -lpthread
 
 all: myprogram client
 client: main_client
-echo_client.o : echo_client.cpp echo_client.h
+echo_client.o : echo_client.cpp echo_client.h client_data.h
 	${CC} ${CFLAGS} -c echo_client.cpp
-main_client: echo_client.o main_client.cpp
-	${CC} ${CFLAGS} main_client.cpp echo_client.o ${LDFLAGS} -o ../client
+main_client: echo_client.o main_client.cpp client_data.o
+	${CC} ${CFLAGS} main_client.cpp echo_client.o client_data.o ${LDFLAGS} -o ../client
 
 client_data.o : client_data.cpp client_data.h
 	${CC} ${CFLAGS} -c client_data.cpp

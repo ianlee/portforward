@@ -41,6 +41,7 @@ public:
 	int has(int sock);
 	int setRtt(int sock);
 	int recordData(int socket, int number);
+	int getNumRequest(int socket);
 private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;
