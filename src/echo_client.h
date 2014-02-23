@@ -16,6 +16,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/wait.h>
+#include <sys/epoll.h>
+#include <assert.h>
+#include <fcntl.h>
 
 #define SERVER_TCP_PORT		7000	// Default port
 #define BUFLEN			255 	// Buffer length
