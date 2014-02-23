@@ -51,6 +51,7 @@ int main(int argc, char **argv)
 				break;
 			case 'b':
 				buflen = atoi(optarg);
+				break;
 			case '?':
 			default:
 				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename] [-n numberOfWorkers] [-b buflength]\n", argv[0]);

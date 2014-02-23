@@ -41,8 +41,10 @@ int main(int argc, char **argv)
 				break;
 			case 'b':
 				buflen = atoi(optarg);
+				break;
 			case 'c':
 				connections = atoi(optarg);
+				break;
 			case '?':
 			default:
 				fprintf(stderr, "Usage: %s [-a hostname] [-p port] [-t timesToSend] [-c maxConnect] [-b buflength]\n", argv[0]);
