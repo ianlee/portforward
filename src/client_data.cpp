@@ -127,7 +127,7 @@ int ClientData::print(){
 	}
 	_mutex.unlock();
 	avgRtt = totalRtt / size;
-	fprintf(_file,"clients: %lu \tRTT: %lf\n", size, avgRtt);
+	fprintf(_file,"clients: %lu \tRTT: %lf %lf\n", size, totalRtt, avgRtt);
 	fflush(_file);
 	return list_of_clients.size();
 }
@@ -264,7 +264,7 @@ int ClientData::setRtt(int socket){
 			//calc rtt
 			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
-			printf("RTT: %d, socket: %d",rtt, socket);
+			printf("RTT: %d, socket: %d\n",rtt, socket);
 		}
 		data->second.last_time = currTime;
 		
