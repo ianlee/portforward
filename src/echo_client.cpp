@@ -68,7 +68,7 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 int Client::run()
 {	
 	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
-	int nready, maxfd, epoll_fd;
+	int nready, epoll_fd;
 	struct epoll_event events[MAX_CONNECT], event;
 	//Create multiple processes and each process will be a single client essentially
 
@@ -79,10 +79,13 @@ int Client::run()
 	for(int i = 0; i < MAX_CONNECT; i++){
 		//create clients and add to epoll
 		int clientSock = create_socket();
+		if(connect_to_server(clientSock, _host)<=0){
+			fprintf(stderr,"connect\n");
+		}
 		if (fcntl (clientSock, F_SETFL, O_NONBLOCK | fcntl (clientSock, F_GETFL, 0)) == -1) 
 			fprintf(stderr,"fcntl\n");
 		
-		clientSock = connect_to_server(clientSock, _host);
+		
 		if(clientSock >0){
 			event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 			event.data.fd = clientSock;
