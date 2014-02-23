@@ -127,7 +127,7 @@ int Client::run()
 				continue;
 			}
 			//do # client sent calc
-			if(ClientData::getNumRequest(sock) < times_sent){
+			if(ClientData::Inscance()->getNumRequest(sock) < times_sent){
 				rtn = send_msgs(sock, sendBuf);
 				ClientData::Instance()->recordData(sock, rtn);
 			} else {
@@ -363,7 +363,7 @@ int Client::recv_msgs(int socket, char * buf)
 			close(socket);
 			return -1;
 		}
-		bp += n;
+		buf += n;
 		bytes_to_read -= n;
 	}
 
