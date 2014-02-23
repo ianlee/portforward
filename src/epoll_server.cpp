@@ -482,6 +482,6 @@ int EpollServer::set_port(int port){
 -- NOTES: Sets server port when starting the server.
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_num_threads(int num){
-	_numThreads=_num;
+	_numThreads=num;
 	return 1;
 }
