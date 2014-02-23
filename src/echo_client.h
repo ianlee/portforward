@@ -23,7 +23,6 @@
 #include <fcntl.h>
 
 #define SERVER_TCP_PORT		7000	// Default port
-#define BUFLEN			255 	// Buffer length
 #define MAX_CONNECT		100	// Max number of connections to server
 
 class Client {
@@ -37,10 +36,11 @@ public:
 	int connect_to_server(int socket, char * host);
 	int send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * buf);
-
+	int setBufLen(int buflen);
+	int setConnections(int connections);
 private:
 	char * _host;
-	int _port, times_sent;
+	int _port, times_sent, _buflen, _connections;
 
 };
 

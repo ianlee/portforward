@@ -13,6 +13,8 @@
 --			  int Client::connect_to_server(int socket, char * host)
 --			  int Client::send_msgs(int socket, char * data)
 --			  int Client::recv_msgs(int socket, char * buf)
+--			  int Client::setBufLen(int buflen)
+--			  int Client::setConnections(int connections)
 --
 -- DATE: 2014/02/21
 --
@@ -68,16 +70,16 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 int Client::run()
 {	
 	int rtn;
-	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
+	char sendBuf[] = {"FOOBAR"}, recvBuf[_buflen];
 	int nready, epoll_fd;
-	struct epoll_event events[MAX_CONNECT], event;
+	struct epoll_event events[_connections], event;
 	//Create multiple processes and each process will be a single client essentially
 
-	epoll_fd = epoll_create(MAX_CONNECT);
+	epoll_fd = epoll_create(_connections);
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
 	// Add the server socket to the epoll event loop
-	for(int i = 0; i < MAX_CONNECT; i++){
+	for(int i = 0; i < _connections; i++){
 		//create clients and add to epoll
 		int clientSock = create_socket();
 		if(connect_to_server(clientSock, _host)<=0){
@@ -104,7 +106,7 @@ int Client::run()
 	
 	while(true){
 		
-		nready = epoll_wait (epoll_fd, events, MAX_CONNECT, -1);
+		nready = epoll_wait (epoll_fd, events, _connections, -1);
 		for (int i = 0; i < nready; i++){	// check all clients for data
 			int sock = events[i].data.fd;
 			// Case 1: Error condition
@@ -169,7 +171,7 @@ void Client::child_client_process(int client_num, int times_sent)
 {
 	std::cout << "Processing client " << client_num << std::endl;
 	int clientSock = create_socket();
-	char sendBuf[] = {"FOOBAR"}, recvBuf[BUFLEN];
+	char sendBuf[] = {"FOOBAR"}, recvBuf[_buflen];
 	clientSock = connect_to_server(clientSock, _host);
 	if(clientSock >0){
 //send_msgs(clientSock, sendBuf);
@@ -319,7 +321,7 @@ int Client::connect_to_server(int socket, char * host)
 ----------------------------------------------------------------------------------------------------------------------*/
 int Client::send_msgs(int socket, char * data)
 {
-	return send(socket, data, BUFLEN, 0);
+	return send(socket, data, _buflen, 0);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -344,7 +346,7 @@ int Client::send_msgs(int socket, char * data)
 int Client::recv_msgs(int socket, char * buf)
 {
 	
-	int n, bytes_to_read = BUFLEN;
+	int n, bytes_to_read = _buflen;
 	while ((n = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
 		
@@ -367,5 +369,53 @@ int Client::recv_msgs(int socket, char * buf)
 		bytes_to_read -= n;
 	}
 
+	return 1;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setBufLen
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::setBufLen(int buflen)
+--				    int buflen - length of buffer 
+--				
+--
+-- RETURNS:  1
+--
+-- NOTES: sets buffer length.
+----------------------------------------------------------------------------------------------------------------------*/
+int Client::setBufLen(int buflen){
+	_buflen=buflen;
+	return 1;
+
+}
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setBufLen
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int Client::setConnections(int connections)
+--				    int connections - max number of connections
+--				
+--
+-- RETURNS:  1
+--
+-- NOTES: sets max connections.
+----------------------------------------------------------------------------------------------------------------------*/
+int Client::setConnections(int connections){
+	_connections = connections;
 	return 1;
 }

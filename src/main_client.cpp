@@ -23,10 +23,12 @@ int main(int argc, char **argv)
 {
 	char *host;
 	int port = SERVER_TCP_PORT;
-	int times_sent = 10000;
+	int times_sent = 5000;
 	char c;
+	int buflen = 255;
+	int connections = 1000;
 	
-	while ((c = getopt (argc, argv, "aptfn:")) != -1){
+	while ((c = getopt (argc, argv, "aptb:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);
@@ -37,15 +39,20 @@ int main(int argc, char **argv)
 			case 't':
 				times_sent = atoi(optarg);
 				break;
-			
+			case 'b':
+				buflen = atoi(optarg);
+			case 'n':
+				connections = atoi(optarg);
 			case '?':
 			default:
-				fprintf(stderr, "Usage: %s [-a hostname] [-p port] [-t timesToSend] \n", argv[0]);
+				fprintf(stderr, "Usage: %s [-a hostname] [-p port] [-t timesToSend] [-c maxConnect] [-b buflength]\n", argv[0]);
 				exit(1);
 		}
 	}
 
 	Client client(host, port, times_sent);
+	client.setBufLen(buflen);
+	client.setConnections(connections);
 	client.run();
 	return 0;
 }

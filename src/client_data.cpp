@@ -307,6 +307,7 @@ int ClientData::setRtt(int socket){
 --
 -- RETURNS:  total amount of data sent to this client.
 --
+-- NOTES: saves amount of data sent by socket.
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::recordData(int socket, int number){
 	long total = 0;
@@ -335,6 +336,7 @@ int ClientData::recordData(int socket, int number){
 --
 -- RETURNS:  number of times received data
 --
+-- NOTES: getter function for number of requests received
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::getNumRequest(int socket){
 	_mutex.lock();
