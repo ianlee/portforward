@@ -95,7 +95,7 @@ int Client::run()
 				
 			
 			rtn = send_msgs(clientSock, sendBuf);
-			ClientData::Instance()->reportData(clientSock, rtn);
+			ClientData::Instance()->recordData(clientSock, rtn);
 		}
 	}
 	
@@ -127,9 +127,9 @@ int Client::run()
 				continue;
 			}
 			//do # client sent calc
-			if(getNumRequest(sock) < times_sent){
+			if(ClientData::getNumRequest(sock) < times_sent){
 				rtn = send_msgs(sock, sendBuf);
-				ClientData::Instance()->reportData(sock, rtn);
+				ClientData::Instance()->recordData(sock, rtn);
 			} else {
 				//met quota for sending packets to server. close connection
 				ClientData::Instance()->removeClient(sock);
@@ -345,7 +345,7 @@ int Client::recv_msgs(int socket, char * buf)
 {
 	int total_read=0;
 	int n, bytes_to_read = BUFLEN;
-	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
+	while ((n = recv (socket, buf, bytes_to_read, 0)) < bytes_to_read)
 	{
 		
 		if(n == -1){
