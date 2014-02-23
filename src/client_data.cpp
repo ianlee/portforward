@@ -118,16 +118,20 @@ int ClientData::print(){
 	unsigned long size;
 	double avgRtt;
 	double totalRtt;
+	int numClients = 0;
 	
 	_mutex.lock();
 	size =  list_of_clients.size() ;
 	
 	for(std::map<int,client_data>::iterator it = list_of_clients.begin(); it!=list_of_clients.end(); ++it){
-		totalRtt += it->second.rtt;
+		if(it->second.rtt !=0){
+			totalRtt += it->second.rtt;
+			++numClients;
+		}
 	}
 	_mutex.unlock();
-	avgRtt = totalRtt / size;
-	fprintf(_file,"clients: %lu \tRTT: %lf %lf\n", size, totalRtt, avgRtt);
+	avgRtt = totalRtt / numClients;
+	fprintf(_file,"clients: %lu \tRTT: %lf\n", size, avgRtt);
 	fflush(_file);
 	return list_of_clients.size();
 }
@@ -265,7 +269,7 @@ int ClientData::setRtt(int socket){
 			//calc rtt
 			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
-			printf("RTT: %d, socket: %d\n",rtt, socket);
+			//printf("RTT: %d, socket: %d\n",rtt, socket);
 		}
 		data->second.last_time = currTime;
 		
