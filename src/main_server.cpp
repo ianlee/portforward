@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	const char* filename = "test/tests.txt";
 	int buflen = 255;
 	//get args
-	while ((c = getopt (argc, argv, "fnptbn:")) != -1){
+	while ((c = getopt (argc, argv, "f:n:p:t:b:n:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);

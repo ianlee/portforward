@@ -21,14 +21,14 @@
 ----------------------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
-	char *host;
+	char *host= NULL;
 	int port = SERVER_TCP_PORT;
 	int times_sent = 5000;
 	char c;
 	int buflen = 255;
 	int connections = 1000;
 	
-	while ((c = getopt (argc, argv, "aptbc:")) != -1){
+	while ((c = getopt (argc, argv, "a:p:t:b:c:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 				exit(1);
 		}
 	}
-
+	printf("host:%s\n", host);
 	Client client(host, port, times_sent);
 	client.setBufLen(buflen);
 	client.setConnections(connections);
