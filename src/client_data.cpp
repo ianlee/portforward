@@ -253,13 +253,13 @@ int ClientData::has(int sock){
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::setRtt(int socket){
 	int rtt = -1;
-	
+	struct timeval currTime;
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients.end()){
-		if(data->second.last_time){
-			struct timeval currTime;
+		if(data->second.last_time !=NULL){
+			
 			gettimeofday(&currTime,NULL);
 			//calc rtt
 			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
