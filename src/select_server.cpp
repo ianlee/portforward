@@ -442,6 +442,7 @@ void * SelectServer::process_client(void * args)
 		if(mServer->recv_msgs(sock, buf)<0){
 			continue;
 		}
+		ClientData::Instance()->setRtt(sock);
 		//printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	
 	}		            				
