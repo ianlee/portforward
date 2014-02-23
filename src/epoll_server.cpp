@@ -17,7 +17,8 @@
 --			  int EpollServer::set_sock_option(int listenSocket)
 --			  void * EpollServer::process_client(void * args)
 --			  int EpollServer::set_port(int port)
---			  int EpollServer::set_num_threads(int num);
+--			  int EpollServer::set_num_threads(int num)
+--			  int EpollServer::setBufLen(int buflen)
 --
 --
 -- DATE: 2014/02/21
@@ -484,5 +485,27 @@ int EpollServer::set_port(int port){
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_num_threads(int num){
 	_numThreads=num;
+	return 1;
+}
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setBufLen
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::setBufLen(int buflen)
+--					int buflen - buffer length
+--
+-- RETURNS:  N/A
+--
+-- NOTES: sets buffer length for recv functions
+----------------------------------------------------------------------------------------------------------------------*/
+int EpollServer::setBufLen(int buflen){
+	_buflen = buflen;
 	return 1;
 }

@@ -17,7 +17,8 @@
 --			  int SelectServer::set_sock_option(int listenSocket)
 --			  void * SelectServer::process_client(void * args)
 --			  int SelectServer::set_port(int port)
---            int SelectServer::set_num_threads(int num);
+--			  int SelectServer::set_num_threads(int num);
+--			  int SelectServer::setBufLen(int buflen)
 --			  
 --
 -- DATE: 2014/02/21
@@ -497,3 +498,26 @@ int SelectServer::set_num_threads(int num){
 	_numThreads=num;
 	return 1;
 }
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setBufLen
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int SelectServer::setBufLen(int buflen)
+--					int buflen - buffer length
+--
+-- RETURNS:  N/A
+--
+-- NOTES: sets buffer length for send and recv functions
+----------------------------------------------------------------------------------------------------------------------*/
+int SelectServer::setBufLen(int buflen){
+	_buflen = buflen;
+	return 1;
+}
+

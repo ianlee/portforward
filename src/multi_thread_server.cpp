@@ -17,6 +17,7 @@
 --			  int MultiThreadServer::set_sock_option(int listenSocket)
 --			  void * MultiThreadServer::process_client(void * args)
 --			  int MultiThreadServer::set_port(int port)
+--			  int MultiThreadServer::setBufLen(int buflen)
 --			  
 --
 -- DATE: 2014/02/21
@@ -399,5 +400,26 @@ int MultiThreadServer::set_port(int port){
 	_port = port;
 	return 1;
 }
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: setBufLen
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int MultiThreadServer::setBufLen(int buflen)
+--					int buflen - buffer length
+--
+-- RETURNS:  N/A
+--
+-- NOTES: sets buffer length for send and recv functions
+----------------------------------------------------------------------------------------------------------------------*/
+int MultiThreadServer::setBufLen(int buflen){
+	_buflen = buflen;
+	return 1;
+}
 

@@ -35,7 +35,7 @@
 class EpollServer {
 
 public:
-	std::chrono::milliseconds timeout= std::chrono::milliseconds(300000);
+	std::chrono::milliseconds timeout= std::chrono::milliseconds(3000000);
 	static EpollServer* Instance();
 
 	EpollServer(int port);
@@ -49,6 +49,7 @@ public:
 	int set_sock_option(int listenSocket);
 	int set_port(int port);
 	int set_num_threads(int num);
+	int setBufLen(int buflen);
 private:
 
 	int 	serverSock, _port, _numThreads;
@@ -62,6 +63,7 @@ private:
 	int maxfd;
 	int maxi;
 	int nready;
+	int _buflen;
 	struct epoll_event events[MAXCLIENTS], event;
 };
 

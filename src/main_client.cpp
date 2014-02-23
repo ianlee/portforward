@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	int buflen = 255;
 	int connections = 1000;
 	
-	while ((c = getopt (argc, argv, "aptb:")) != -1){
+	while ((c = getopt (argc, argv, "aptbc:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 				break;
 			case 'b':
 				buflen = atoi(optarg);
-			case 'n':
+			case 'c':
 				connections = atoi(optarg);
 			case '?':
 			default:

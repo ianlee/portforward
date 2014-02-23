@@ -33,8 +33,9 @@ int main(int argc, char **argv)
 	SelectServer* server2;
 	EpollServer* server3;
 	const char* filename = "test/tests.txt";
+	int buflen = 255;
 	//get args
-	while ((c = getopt (argc, argv, "fnpt:")) != -1){
+	while ((c = getopt (argc, argv, "fnptbn:")) != -1){
          switch (c){
 			case 'p':
 				port= atoi(optarg);
@@ -48,9 +49,11 @@ int main(int argc, char **argv)
 			case 'n':
 				numberWorkers= atoi(optarg);
 				break;
+			case 'b':
+				buflen = atoi(optarg);
 			case '?':
 			default:
-				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename] [-n numberOfWorkers]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename] [-n numberOfWorkers] [-b buflength]\n", argv[0]);
 				exit(1);
 		}
 	}
@@ -69,11 +72,13 @@ int main(int argc, char **argv)
 		case 1:
 			server1 = MultiThreadServer::Instance();
 			server1->set_port(port);
+			server1->setBufLen(buflen);
 			server1->run();
 			break;
 		case 2:
 			server2 = SelectServer::Instance();
 			server2->set_port(port);
+			server2->setBufLen(buflen);
 			server2->set_num_threads(numberWorkers);
 			server2->run();
 			break;
@@ -81,6 +86,7 @@ int main(int argc, char **argv)
 		default:
 			server3 = EpollServer::Instance();
 			server3->set_port(port);
+			server3->setBufLen(buflen);
 			server3->set_num_threads(numberWorkers);
 			server3->run();
 			break;

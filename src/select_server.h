@@ -46,6 +46,7 @@ public:
 	int set_sock_option(int listenSocket);
 	int set_port(int port);
 	int set_num_threads(int num);
+	int setBufLen(int buflen);
 private:
 
 	int 	serverSock, _port, _numThreads;
@@ -62,6 +63,7 @@ private:
 	int client[MAXCLIENTS];
 	fd_set allset;
 	fd_set rset;
+	int _buflen;
 
 };
 

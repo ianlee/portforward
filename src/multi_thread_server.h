@@ -40,13 +40,14 @@ public:
 	int recv_msgs(int socket, char * bp);
 	int set_sock_option(int listenSocket);
 	int set_port(int port);
+	int setBufLen(int buflen);
 private:
 
 	int 	serverSock, _port;
 //	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
 	static MultiThreadServer* m_pInstance;
-	
+	int _buflen;
 };
 
 #endif
