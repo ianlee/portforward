@@ -1,5 +1,6 @@
 #include "echo_client.h"
-
+#include <time.h>
+void* printThread(void * args);
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: main (client)
 --
@@ -27,6 +28,7 @@ int main(int argc, char **argv)
 	char c;
 	int buflen = 255;
 	int connections = 1000;
+	const char* filename = "test/client.txt";
 	
 	while ((c = getopt (argc, argv, "a:p:t:b:c:")) != -1){
          switch (c){
@@ -51,10 +53,50 @@ int main(int argc, char **argv)
 				exit(1);
 		}
 	}
+
+	//set filename
+	if(ClientData::Instance()->setFile(filename) <0 ){
+		fprintf(stderr, "File could not be opened: %s\n", filename);
+		exit(1);
+	}
+	//create stat printing thread
+	pthread_t tid;
+	pthread_create(&tid, NULL, printThread, (void*)NULL);
+	
 	printf("host:%s\n", host);
 	Client client(host, port, times_sent);
 	client.setBufLen(buflen);
 	client.setConnections(connections);
 	client.run();
 	return 0;
+}
+
+
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: printThread
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: void* printThread(void * args)
+--
+-- RETURNS:  0 on success
+--
+-- NOTES: Thread that prints the number of clients to a file in a loop.
+----------------------------------------------------------------------------------------------------------------------*/
+
+void* printThread(void * args){
+	const struct timespec timeout {1,0};
+	//timeout.tv_sec=0;
+	//timeout.tv_nsec=500000000; // 0.5seconds
+	while(1){
+		nanosleep(&timeout, NULL);
+		ClientData::Instance()->print();
+	}
+	return (void*)0;
 }

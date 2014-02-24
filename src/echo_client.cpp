@@ -84,23 +84,27 @@ int Client::run()
 		int clientSock = create_socket();
 		if(connect_to_server(clientSock, _host)<=0){
 			fprintf(stderr,"connect\n");
+				exit(1);
 		}
-		if (fcntl (clientSock, F_SETFL, O_NONBLOCK | fcntl (clientSock, F_GETFL, 0)) == -1) 
+		if (fcntl (clientSock, F_SETFL, O_NONBLOCK | fcntl (clientSock, F_GETFL, 0)) == -1) {
 			fprintf(stderr,"fcntl\n");
-		
+				exit(1);
+		}
 		
 		if(clientSock >0){
 			event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 			event.data.fd = clientSock;
-			if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, clientSock, &event) == -1) 
+			if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, clientSock, &event) == -1) {
 				fprintf(stderr,"epoll_ctl\n");
+				exit(1);
+			}
 				
 			
 			rtn = send_msgs(clientSock, sendBuf);
 			ClientData::Instance()->recordData(clientSock, rtn);
 		}
 	}
-	
+	fflush(stderr);
 	
 	
 	
@@ -112,7 +116,7 @@ int Client::run()
 			// Case 1: Error condition
     		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
-				
+				exit(1);
 				close(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
@@ -123,7 +127,8 @@ int Client::run()
 			if(rtn){
 				//std::cout << "Received  on " << sock << ": " <<recvBuf << std::endl;
 				//do rtt calc
-				std::cout << sock << "RTT:" <<ClientData::Instance()->setRtt(sock)<< "usec" << std::endl;
+				ClientData::Instance()->setRtt(sock);
+				//std::cout << sock << "RTT:" <<ClientData::Instance()->setRtt(sock)<< "usec" << std::endl;
 			}
 			else{
 				continue;
@@ -136,8 +141,12 @@ int Client::run()
 				//met quota for sending packets to server. close connection
 				ClientData::Instance()->removeClient(sock);
 				close(sock);
+				
 			}
  		}
+		if(ClientData::Instance()->empty()){
+			break;
+		}
 	
 	}
 	
@@ -245,6 +254,7 @@ int Client::create_socket()
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		perror("Cannot create socket");
+		exit(1);
 	}
 	return sd;
 	
@@ -289,11 +299,14 @@ int Client::connect_to_server(int socket, char * host)
 	if (connect (socket, (struct sockaddr *)&server, sizeof(server)) == -1)
 	{
 		fprintf(stderr, "Can't connect to server\n");
+		fflush(stderr);
 		perror("connect");
+		exit(1);
 		return 0;
 	}
-	
-	ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
+	if(socket > 0){
+		ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
+	}
 //	printf("Connected:    Server Name: %s\n", hostptr->h_name);
 	//hostptr->h_addr_list;
 //	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
@@ -358,11 +371,13 @@ int Client::recv_msgs(int socket, char * buf)
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
+				exit(1);
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
 			close(socket);
+				exit(1);
 			return -1;
 		}
 		buf += n;

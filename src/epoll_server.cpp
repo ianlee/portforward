@@ -99,6 +99,7 @@ EpollServer* EpollServer::Instance()
 int EpollServer::run() {
 	pthread_t tids[_numThreads];
 	int i;
+
 	
 	for(int i = 0; i < _numThreads; i++)
 	{
@@ -129,23 +130,31 @@ int EpollServer::run() {
 		fprintf(stderr,"epoll_ctl\n");
 	
 	while(true){
-		
 		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
 		for (i = 0; i < nready; i++){	// check all clients for data
 
 		// Case 1: Error condition
-    		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
-				fputs("epoll: EPOLLERR", stderr);
-				int sock = events[i].data.fd;
-				close(sock);
-				ClientData::Instance()->removeClient(sock);
-				continue;
+    		if (events[i].events & (EPOLLHUP)) {
+			fputs("epoll: EPOLLHUP", stderr);
+			int sock = events[i].data.fd;
+			close(sock);
+			ClientData::Instance()->removeClient(sock);
+			continue;
     		}
+    		if (events[i].events & ( EPOLLERR)) {
+			fputs("epoll: EPOLLERR", stderr);
+			int sock = events[i].data.fd;
+			close(sock);
+			ClientData::Instance()->removeClient(sock);
+			continue;
+    		}
+	
     		assert (events[i].events & EPOLLIN);
 
 	    	// Case 2: Server is receiving a connection request
 	    	if (events[i].data.fd == serverSock) {
-				accept_client();				
+
+				while(accept_client()>1);
 				continue;
     		}
 
@@ -273,6 +282,8 @@ int EpollServer::accept_client()
 	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1){
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
 			fprintf(stderr, "Can't accept client\n");
+			return -1;
+		} else {
 			return 0;
 		}
 		
@@ -290,7 +301,7 @@ int EpollServer::accept_client()
 	
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
-	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
+	//printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }
 
