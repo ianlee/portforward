@@ -71,7 +71,7 @@ int Client::run()
 {	
 	int rtn;
 	char sendBuf[_buflen];
-	std::strncpy(sendBuf, "FOOBAR ", _buflen-1);
+	std::strncpy(sendBuf, "FOOBAR ", _buflen);
 	char recvBuf[_buflen];
 	int nready, epoll_fd;
 	struct epoll_event events[_connections], event;
