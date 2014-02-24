@@ -326,7 +326,7 @@ int EpollServer::accept_client()
 ----------------------------------------------------------------------------------------------------------------------*/
 void EpollServer::send_msgs(int socket, char * data)
 {
-	send(socket, data, BUFLEN, 0);
+	send(socket, data, _buflen, 0);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -350,7 +350,7 @@ void EpollServer::send_msgs(int socket, char * data)
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::recv_msgs(int socket, char * bp)
 {
-	int n, bytes_to_read = BUFLEN;
+	int n, bytes_to_read = _buflen;
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
 		
@@ -401,8 +401,8 @@ int EpollServer::set_sock_option(int listenSocket)
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
-	// Set buffer length to send or receive to BUFLEN.
-	value = BUFLEN;
+	// Set buffer length to send or receive to _buflen.
+	value = _buflen;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
@@ -433,9 +433,9 @@ int EpollServer::set_sock_option(int listenSocket)
 void * EpollServer::process_client(void * args)
 {	
 	int sock;
-	char buf[BUFLEN];
+
 	EpollServer* mServer = EpollServer::Instance();
-	
+	char buf[mServer->_buflen];	
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
 		if(!ClientData::Instance()->has(sock)){
@@ -448,7 +448,7 @@ void * EpollServer::process_client(void * args)
 		ClientData::Instance()->setRtt(sock);
 		//printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	
-		ClientData::Instance()->recordData(sock, BUFLEN);
+		ClientData::Instance()->recordData(sock, mServer->_buflen);
 	}		            				
 	return (void*)0;
 

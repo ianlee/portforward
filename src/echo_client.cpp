@@ -70,8 +70,8 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 int Client::run()
 {	
 	int rtn;
-	char sendBuf[_buflen];
-	std::strncpy(sendBuf, "FOOBAR ", _buflen);
+	char sendBuf[]={ "FOOBAR "};
+
 	char recvBuf[_buflen];
 	int nready, epoll_fd;
 	struct epoll_event events[_connections], event;

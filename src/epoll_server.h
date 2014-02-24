@@ -50,6 +50,7 @@ public:
 	int set_port(int port);
 	int set_num_threads(int num);
 	int setBufLen(int buflen);
+	int _buflen;
 private:
 
 	int 	serverSock, _port, _numThreads;
@@ -62,7 +63,7 @@ private:
 	int maxfd;
 	int maxi;
 	int nready;
-	int _buflen;
+
 	struct epoll_event events[MAXCLIENTS], event;
 };
 
