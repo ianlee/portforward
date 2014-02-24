@@ -38,7 +38,7 @@ public:
 	std::chrono::milliseconds timeout= std::chrono::milliseconds(3000000);
 	static EpollServer* Instance();
 
-//	EpollServer(int port);
+
 	int run();
 	int create_socket();
 	int bind_socket();

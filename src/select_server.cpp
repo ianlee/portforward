@@ -15,7 +15,7 @@
 --			  void SelectServer::send_msgs(int socket, char * data)
 --			  int SelectServer::recv_msgs(int socket, char * bp)
 --			  int SelectServer::set_sock_option(int listenSocket)
---			  void * SelectServer::process_client(void * args)
+
 --			  int SelectServer::set_port(int port)
 --			  int SelectServer::set_num_threads(int num);
 --			  int SelectServer::setBufLen(int buflen)
@@ -160,10 +160,10 @@ int SelectServer::run()
 					continue;
 				}
 				ClientData::Instance()->setRtt(sockfd);
-				//printf("Received: %s\n", buf);	
+
 				send_msgs(sockfd, buf);	
 				ClientData::Instance()->recordData(sockfd, _buflen);
-				//fd_queue.push(sockfd, timeout);
+
 	         		if (--nready <= 0){
 					break;        // no more readable descriptors
 				}
@@ -292,7 +292,7 @@ int SelectServer::accept_client()
 	}
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
-	//printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
+
 	return sServerSock;
 }
 
@@ -342,7 +342,7 @@ void SelectServer::send_msgs(int socket, char * data)
 int SelectServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = _buflen;
-	//printf("recv %d\n", socket);
+
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
 
@@ -418,49 +418,6 @@ int SelectServer::set_sock_option(int listenSocket)
 
 }
 
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: process_client
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: void * SelectServer::process_client(void * args)
---
--- RETURNS:  0 on success
---
--- NOTES: Thread that processes the client by receiving and sending packets from the server. 
-----------------------------------------------------------------------------------------------------------------------*/
-void * SelectServer::process_client(void * args)
-{	
-	int sock;
-	char buf[BUFLEN];
-	SelectServer* mServer = SelectServer::Instance();
-	
-	while(1){
-
-		mServer->fd_queue.pop(sock, mServer->timeout);
-
-		printf("fd socket from queue%d\n", sock);
-		//if(!ClientData::Instance()->has(sock)){
-		//	continue;
-		//}
-		if(mServer->recv_msgs(sock, buf)<0){
-			continue;
-		}
-		//ClientData::Instance()->setRtt(sock);
-		//printf("Received: %s\n", buf);	
-		mServer->send_msgs(sock, buf);	
-		//ClientData::Instance()->recordData(sock, BUFLEN);
-	}		            				
-	
-	return (void*)0;
-
-}
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: set_port

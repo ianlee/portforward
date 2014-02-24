@@ -23,7 +23,7 @@
 
 #define BUFLEN 255
 #define TCP_PORT 7000
-#define MAXCLIENTS 10000
+#define MAXCLIENTS 100000
 
 
 
@@ -50,9 +50,8 @@ public:
 private:
 
 	int 	serverSock, _port, _numThreads;
-//	std::vector<client_data*> list_of_clients;
-	static void * process_client(void * args);
-//
+
+
 	
 	blocking_queue<int> fd_queue;
 	

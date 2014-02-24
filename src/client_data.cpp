@@ -50,8 +50,7 @@
 ClientData* ClientData::Instance()
 {
 	static ClientData m_pInstance;	
-//if (!m_pInstance)   // Only allow one instance of class to be generated.
-//		m_pInstance = new ClientData;
+
 	return &m_pInstance;
 }
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -284,16 +283,11 @@ int ClientData::setRtt(int socket){
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients.end()){
-		//std::cout << "found socket for rtt "<<data->second.last_time.tv_sec <<"."<<data->second.last_time.tv_usec<< std::endl;
+	
 		if(data->second.lasttime > 0){
 			
-//			gettimeofday(&currTime,NULL);
-			//calc rtt
-//			printf("thistime: %ld", thistime);
-
 			rtt = thistime- data->second.lasttime;
 			data->second.rtt = rtt;
-			//printf("this: %ld last: %ld RTT: %d\n",thistime, data->second.lasttime, rtt);
 		}
 		data->second.lasttime = thistime;
 		++ data->second.num_request;

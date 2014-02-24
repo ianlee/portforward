@@ -7,8 +7,6 @@
 --
 -- FUNCTIONS: Client::Client(char * host, int port, int t_sent)
 --			  int Client::run()
---			  void Client::child_client_process(int client_num, int times_sent)
---			  void Client::wait_for_client_processes()
 --			  int Client::create_socket()
 --			  int Client::connect_to_server(int socket, char * host)
 --			  int Client::send_msgs(int socket, char * data)
@@ -127,10 +125,10 @@ int Client::run()
     		// Case 2: One of the sockets has read data
 			int rtn = recv_msgs(sock, recvBuf);
 			if(rtn){
-				//std::cout << "Received  on " << sock << ": " <<recvBuf << std::endl;
+				
 				//do rtt calc
 				ClientData::Instance()->setRtt(sock);
-				//std::cout << sock << "RTT:" <<ClientData::Instance()->setRtt(sock)<< "usec" << std::endl;
+				
 			}
 			else{
 				continue;
@@ -157,79 +155,6 @@ int Client::run()
 	return 0;
 }
 
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: child_client_process
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: void Client::child_client_process(int client_num, int times_sent)
---						int client_num - client process ID number
---						int times_sent - number of times the client will send 
---																 messages to the server
---
---
--- RETURNS:  void
---
--- NOTES: A client process that will send and receive messages from the server for a specified amount of time.
-----------------------------------------------------------------------------------------------------------------------*/
-void Client::child_client_process(int client_num, int times_sent)
-{
-	std::cout << "Processing client " << client_num << std::endl;
-	int clientSock = create_socket();
-	char sendBuf[] = {"FOOBAR"}, recvBuf[_buflen];
-	clientSock = connect_to_server(clientSock, _host);
-	if(clientSock >0){
-//send_msgs(clientSock, sendBuf);
-	for(int i = 0; i<50; ++i){
-		std::cout << "Sending " << send_msgs(clientSock, sendBuf) << " bytes " << client_num << std::endl;
-		int rtn = recv_msgs(clientSock, recvBuf);
-		if(rtn){
-			std::cout << "Received " << rtn << " bytes " << client_num << recvBuf << std::endl;
-		}
-		else{
-			break;
-		}
-	}
-
-//recv_msgs(clientSock, recvBuf);
-	std::cout << "Closing client " << client_num << " socket" << std::endl;
-	close(clientSock);
-}
-	//fflush(stdout);
-	exit(0);
-}
-
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: wait_for_client_processes
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: void Client::wait_for_client_processes()
---
--- RETURNS:  void
---
--- NOTES: Waits for all client processes to finish before exiting.
-----------------------------------------------------------------------------------------------------------------------*/
-void Client::wait_for_client_processes()
-{
-	while (wait(NULL) > 0) {
-   		if (errno == ECHILD) { /* If there are no more child processes running */
-      		break;
-   		}
-	}
-}
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: create_socket
@@ -309,9 +234,7 @@ int Client::connect_to_server(int socket, char * host)
 	if(socket > 0){
 		ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
 	}
-//	printf("Connected:    Server Name: %s\n", hostptr->h_name);
-	//hostptr->h_addr_list;
-//	printf("\t\tIP Address: %s\n", inet_ntop(hostptr->h_addrtype, *pptr, str, sizeof(str)));
+
 	return socket;
 }
 

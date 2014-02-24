@@ -44,7 +44,7 @@ public:
 private:
 
 	int 	serverSock, _port;
-//	std::vector<client_data*> list_of_clients;
+
 	static void * process_client(void * args);
 
 	int _buflen;

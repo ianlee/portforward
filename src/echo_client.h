@@ -31,9 +31,9 @@ class Client {
 public:
 	Client(char * host, int port, int t_sent);
 	int run();
-	void child_client_process(int client_num, int times_sent);
+	
 	int create_socket();
-	void wait_for_client_processes();
+
 	int connect_to_server(int socket, char * host);
 	int send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * buf);

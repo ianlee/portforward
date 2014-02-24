@@ -301,7 +301,7 @@ int EpollServer::accept_client()
 	
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
-	//printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
+
 	return sServerSock;
 }
 
@@ -446,7 +446,6 @@ void * EpollServer::process_client(void * args)
 			continue;
 		}
 		ClientData::Instance()->setRtt(sock);
-		//printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	
 		ClientData::Instance()->recordData(sock, mServer->_buflen);
 	}		            				
