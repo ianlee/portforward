@@ -31,11 +31,11 @@
 class SelectServer {
 
 public:
-	std::chrono::milliseconds timeout= std::chrono::milliseconds(300000);
+	std::chrono::milliseconds timeout= std::chrono::milliseconds(3000);
 
 	 static SelectServer* Instance();
 
-//	SelectServer(int port);
+	SelectServer(int port);
 	int run();
 	int create_socket();
 	int bind_socket();
@@ -56,7 +56,7 @@ private:
 	
 	blocking_queue<int> fd_queue;
 	
-	
+	static SelectServer* m_pInstance;
 	int maxfd;
 	int maxi;
 	std::atomic<int> nready;

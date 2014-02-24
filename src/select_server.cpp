@@ -50,9 +50,9 @@
 --
 -- NOTES: Select Server constructor that will initialize the server port.
 ----------------------------------------------------------------------------------------------------------------------*/
-//SelectServer::SelectServer(int port) : _port(port) {}
+SelectServer::SelectServer(int port) : _port(port) {}
 
-//SelectServer* SelectServer::m_pInstance = NULL;
+SelectServer* SelectServer::m_pInstance = NULL;
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: Instance
@@ -73,10 +73,10 @@
 ----------------------------------------------------------------------------------------------------------------------*/
 SelectServer* SelectServer::Instance()
 {
-	static SelectServer m_pInstance;
-	//if (!m_pInstance)   // Only allow one instance of class to be generated.
-	//	m_pInstance = new SelectServer(TCP_PORT);
-	return &m_pInstance;
+
+	if (!m_pInstance)   // Only allow one instance of class to be generated.
+		m_pInstance = new SelectServer(TCP_PORT);
+	return m_pInstance;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -98,18 +98,12 @@ SelectServer* SelectServer::Instance()
 ----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::run()
 {
-	//int socks [MAXCLIENTS];
-	pthread_t tids[_numThreads];
 	int i;
 	
 	
-	for(int i = 0; i < _numThreads; i++)
-	{
-		pthread_create(&tids[i], NULL, process_client, NULL);
-	}
 	
 	
-	
+	printf("fdset:%d\n",FD_SETSIZE);
 	serverSock = create_socket();
 	serverSock = bind_socket();
 	serverSock = set_sock_option(serverSock);
@@ -117,7 +111,7 @@ int SelectServer::run()
 
 	maxfd = serverSock;
 	maxi = -1;
-	for (i = 0; i < MAXCLIENTS; i++){
+	for (i = 0; i < FD_SETSIZE; i++){
 		client[i] = -1;   
 	}
 	FD_ZERO(&allset);
@@ -132,7 +126,7 @@ int SelectServer::run()
 			if(sock <=0){
 				break;
 			}
-			for (i = 0; i < MAXCLIENTS; i++){
+			for (i = 0; i < FD_SETSIZE; i++){
 				if (client[i] < 0){
 					client[i] = sock;	// save descriptor
 					break;
@@ -161,7 +155,15 @@ int SelectServer::run()
 				continue;
 			}
 			if (FD_ISSET(sockfd, &rset)) {
-				fd_queue.push(sockfd, timeout);
+				char buf[_buflen];
+				if(recv_msgs(sockfd, buf)<0){
+					continue;
+				}
+				ClientData::Instance()->setRtt(sockfd);
+				//printf("Received: %s\n", buf);	
+				send_msgs(sockfd, buf);	
+				ClientData::Instance()->recordData(sockfd, _buflen);
+				//fd_queue.push(sockfd, timeout);
 	         		if (--nready <= 0){
 					break;        // no more readable descriptors
 				}
@@ -257,7 +259,7 @@ void SelectServer::listen_for_clients()
 {
 	// Listen for connections
 	
-	listen(serverSock, 5);
+	listen(serverSock, 20);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -290,7 +292,7 @@ int SelectServer::accept_client()
 	}
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
-	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
+	//printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }
 
@@ -340,7 +342,7 @@ void SelectServer::send_msgs(int socket, char * data)
 int SelectServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = _buflen;
-	printf("recv %d\n", socket);
+	//printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
 
@@ -376,7 +378,7 @@ int SelectServer::recv_msgs(int socket, char * bp)
 		bytes_to_read -= n;
 	}
 	//printf("end recv %d\n",socket);
-	return 0;
+	return _buflen;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -444,16 +446,16 @@ void * SelectServer::process_client(void * args)
 		mServer->fd_queue.pop(sock, mServer->timeout);
 
 		printf("fd socket from queue%d\n", sock);
-		if(!ClientData::Instance()->has(sock)){
-			continue;
-		}
+		//if(!ClientData::Instance()->has(sock)){
+		//	continue;
+		//}
 		if(mServer->recv_msgs(sock, buf)<0){
 			continue;
 		}
-		ClientData::Instance()->setRtt(sock);
+		//ClientData::Instance()->setRtt(sock);
 		//printf("Received: %s\n", buf);	
 		mServer->send_msgs(sock, buf);	
-		ClientData::Instance()->recordData(sock, BUFLEN);
+		//ClientData::Instance()->recordData(sock, BUFLEN);
 	}		            				
 	
 	return (void*)0;
