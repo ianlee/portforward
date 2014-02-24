@@ -13,9 +13,10 @@
 --			  int ClientData::removeClient(int socket)
 --			  int ClientData::empty()
 --			  int ClientData::has(int sock)
---            int ClientData::setRtt(int sock)
---            int ClientData::recordData(int socket, int number)
---            int ClientData::getNumRequest(int socket)
+--			  int ClientData::setRtt(int sock)
+--			  int ClientData::recordData(int socket, int number)
+--			  int ClientData::getNumRequest(int socket)
+--			  void ClientData::cleanup(int signum)
 --
 -- DATE: 2014/02/21
 --
@@ -28,7 +29,7 @@
 -- NOTES: Used by other server type classes, this class handles the list of clients in an organized fashion.
 ----------------------------------------------------------------------------------------------------------------------*/
 
-ClientData* ClientData::m_pInstance = NULL;
+//ClientData* ClientData::m_pInstance = NULL;
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: Instance
 --
@@ -48,9 +49,10 @@ ClientData* ClientData::m_pInstance = NULL;
 ----------------------------------------------------------------------------------------------------------------------*/
 ClientData* ClientData::Instance()
 {
-	if (!m_pInstance)   // Only allow one instance of class to be generated.
-		m_pInstance = new ClientData;
-	return m_pInstance;
+	static ClientData m_pInstance;	
+//if (!m_pInstance)   // Only allow one instance of class to be generated.
+//		m_pInstance = new ClientData;
+	return &m_pInstance;
 }
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: ~ClientData
@@ -117,9 +119,9 @@ int ClientData::setFile(const char* filename){
 -- NOTES: Print number of clients and the avg RTT of clients in the specified file pointer.
 ----------------------------------------------------------------------------------------------------------------------*/
 int ClientData::print(){
-	unsigned long size;
-	double avgRtt;
-	double totalRtt;
+	unsigned long size =0;
+	double avgRtt =0;
+	double totalRtt=0;
 	int numClients = 0;
 	
 	_mutex.lock();
@@ -166,6 +168,9 @@ int ClientData::addClient(int socket, char* client_addr, int client_port){
 	tempData.num_request=0;
 	tempData.rtt = 0;
 	tempData.amount_data=0;
+	tempData.last_time.tv_sec = 0;
+	tempData.last_time.tv_usec = 0;
+	
 	
 	_mutex.lock();
 	list_of_clients.insert(std::pair<int, client_data>(socket, tempData));
@@ -271,18 +276,19 @@ int ClientData::has(int sock){
 int ClientData::setRtt(int socket){
 	int rtt = -1;
 	struct timeval currTime;
+	gettimeofday(&currTime,NULL);
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients.end()){
 		//std::cout << "found socket for rtt "<<data->second.last_time.tv_sec <<"."<<data->second.last_time.tv_usec<< std::endl;
-		if(data->second.last_time.tv_usec!=1){
+		if(data->second.last_time.tv_usec>0){
 			
-			gettimeofday(&currTime,NULL);
+//			gettimeofday(&currTime,NULL);
 			//calc rtt
 			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
 			data->second.rtt = rtt;
-			//printf("RTT: %d, socket: %d\n",rtt, socket);
+			printf("RTT: %d\n",rtt);
 		}
 		data->second.last_time = currTime;
 		++ data->second.num_request;
@@ -346,4 +352,10 @@ int ClientData::getNumRequest(int socket){
 		return data->second.num_request;
 	}
 	return 0;
+}
+
+
+void ClientData::cleanup(int signum){
+
+	exit(signum);
 }

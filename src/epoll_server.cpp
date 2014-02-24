@@ -50,10 +50,10 @@
 --
 -- NOTES: Epoll Server constructor that will initialize the server port.
 ----------------------------------------------------------------------------------------------------------------------*/
-EpollServer::EpollServer(int port) : _port(port) {}
+//EpollServer::EpollServer(int port) : _port(port) {}
 
 
-EpollServer* EpollServer::m_pInstance = NULL;
+//EpollServer* EpollServer::m_pInstance = NULL;
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: Instance
@@ -74,9 +74,9 @@ EpollServer* EpollServer::m_pInstance = NULL;
 ----------------------------------------------------------------------------------------------------------------------*/
 EpollServer* EpollServer::Instance()
 {
-	if (!m_pInstance)   // Only allow one instance of class to be generated.
-		m_pInstance = new EpollServer(TCP_PORT);
-	return m_pInstance;
+	static EpollServer m_pInstance;
+
+	return &m_pInstance;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 

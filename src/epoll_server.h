@@ -38,7 +38,7 @@ public:
 	std::chrono::milliseconds timeout= std::chrono::milliseconds(3000000);
 	static EpollServer* Instance();
 
-	EpollServer(int port);
+//	EpollServer(int port);
 	int run();
 	int create_socket();
 	int bind_socket();
@@ -53,9 +53,8 @@ public:
 private:
 
 	int 	serverSock, _port, _numThreads;
-//	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
-	static EpollServer* m_pInstance;
+
 	
 	blocking_queue<int> fd_queue;
 	

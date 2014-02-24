@@ -21,6 +21,7 @@ struct client_data {
 	int client_port;
 	int socket;
 	struct timeval last_time;
+	long lasttime;
 	int rtt;
 	long amount_data;
 	int num_request;
@@ -42,10 +43,11 @@ public:
 	int setRtt(int sock);
 	int recordData(int socket, int number);
 	int getNumRequest(int socket);
+	void cleanup(int signum);
 private:
 	FILE* _file;
 	std::map<int, client_data> list_of_clients;
-	static ClientData* m_pInstance;
+
 	std::mutex _mutex;
 
 };

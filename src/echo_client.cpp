@@ -70,7 +70,9 @@ Client::Client(char * host, int port, int t_sent) : _host(host), _port(port), ti
 int Client::run()
 {	
 	int rtn;
-	char sendBuf[] = {"FOOBAR"}, recvBuf[_buflen];
+	char sendBuf[_buflen];
+	std::strncpy(sendBuf, "FOOBAR ", _buflen-1);
+	char recvBuf[_buflen];
 	int nready, epoll_fd;
 	struct epoll_event events[_connections], event;
 	//Create multiple processes and each process will be a single client essentially
@@ -116,7 +118,7 @@ int Client::run()
 			// Case 1: Error condition
     		if (events[i].events & (EPOLLHUP | EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
-				exit(1);
+
 				close(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;

@@ -50,9 +50,9 @@
 --
 -- NOTES: Select Server constructor that will initialize the server port.
 ----------------------------------------------------------------------------------------------------------------------*/
-SelectServer::SelectServer(int port) : _port(port) {}
+//SelectServer::SelectServer(int port) : _port(port) {}
 
-SelectServer* SelectServer::m_pInstance = NULL;
+//SelectServer* SelectServer::m_pInstance = NULL;
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: Instance
@@ -73,9 +73,10 @@ SelectServer* SelectServer::m_pInstance = NULL;
 ----------------------------------------------------------------------------------------------------------------------*/
 SelectServer* SelectServer::Instance()
 {
-	if (!m_pInstance)   // Only allow one instance of class to be generated.
-		m_pInstance = new SelectServer(TCP_PORT);
-	return m_pInstance;
+	static SelectServer m_pInstance;
+	//if (!m_pInstance)   // Only allow one instance of class to be generated.
+	//	m_pInstance = new SelectServer(TCP_PORT);
+	return &m_pInstance;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -364,11 +365,11 @@ int SelectServer::recv_msgs(int socket, char * bp)
 			
 			return -1;
 		}
-		printf("bytes read and to read %d %d /n", n, bytes_to_read);
+		//printf("bytes read and to read %d %d /n", n, bytes_to_read);
 		bp += n;
 		bytes_to_read -= n;
 	}
-	printf("end recv %d\n",socket);
+	//printf("end recv %d\n",socket);
 	return 0;
 }
 
@@ -436,7 +437,7 @@ void * SelectServer::process_client(void * args)
 
 		mServer->fd_queue.pop(sock, mServer->timeout);
 
-		printf("fd socket from queue%d\n", sock);
+		//printf("fd socket from queue%d\n", sock);
 		if(!ClientData::Instance()->has(sock)){
 			continue;
 		}

@@ -49,9 +49,9 @@
 --
 -- NOTES: Multi-Thread Server constructor that will initialize the server port.
 ----------------------------------------------------------------------------------------------------------------------*/
-MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
+//MultiThreadServer::MultiThreadServer(int port) : _port(port) {}
 
-MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
+//MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: Instance
@@ -72,9 +72,10 @@ MultiThreadServer* MultiThreadServer::m_pInstance = NULL;
 ----------------------------------------------------------------------------------------------------------------------*/
 MultiThreadServer* MultiThreadServer::Instance()
 {
-	if (!m_pInstance)   // Only allow one instance of class to be generated.
-		m_pInstance = new MultiThreadServer(TCP_PORT);
-	return m_pInstance;
+	static MultiThreadServer m_pInstance;
+//	if (!m_pInstance)   // Only allow one instance of class to be generated.
+//		m_pInstance = new MultiThreadServer(TCP_PORT);
+	return &m_pInstance;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -235,7 +236,7 @@ int MultiThreadServer::accept_client()
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
 	//printf("size of client data: %d\n", ClientData::Instance()->print());
-	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
+//	printf(" Remote Address:  %s\n", inet_ntoa(client.sin_addr));
 	return sServerSock;
 }
 
@@ -285,10 +286,10 @@ void MultiThreadServer::send_msgs(int socket, char * data)
 int MultiThreadServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = BUFLEN;
-printf("recv %d\n", socket);
+//printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
-		printf("%d %d /n", n, bytes_to_read);
+//		printf("%d %d /n", n, bytes_to_read);
 		bp += n;
 		bytes_to_read -= n;
 		if(n == -1){
@@ -302,7 +303,7 @@ printf("recv %d\n", socket);
 			break;
 		}
 	}
-printf("end recv %d\n", socket);
+//printf("end recv %d\n", socket);
 	return socket;
 }
 
@@ -363,7 +364,7 @@ int MultiThreadServer::set_sock_option(int listenSocket)
 void * MultiThreadServer::process_client(void * args)
 {	
 	int sock = *((int*) args);
-	printf("socket created                %d\n", sock);
+	//printf("socket created                %d\n", sock);
 	char buf[BUFLEN];
 	MultiThreadServer* mServer = MultiThreadServer::Instance();
 	while (! ClientData::Instance()->empty()){

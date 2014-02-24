@@ -35,7 +35,7 @@ public:
 
 	 static SelectServer* Instance();
 
-	SelectServer(int port);
+//	SelectServer(int port);
 	int run();
 	int create_socket();
 	int bind_socket();
@@ -52,7 +52,7 @@ private:
 	int 	serverSock, _port, _numThreads;
 //	std::vector<client_data*> list_of_clients;
 	static void * process_client(void * args);
-	static SelectServer* m_pInstance;
+//
 	
 	blocking_queue<int> fd_queue;
 	

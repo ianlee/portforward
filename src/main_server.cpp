@@ -3,6 +3,7 @@
 #include "epoll_server.h"
 #include <time.h>
 void* printThread(void * args);
+void signalHandler( int signum );
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: main (server)
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
 	EpollServer* server3;
 	const char* filename = "test/tests.txt";
 	int buflen = 255;
+	signal(SIGINT, signalHandler);  
 	//get args
 	while ((c = getopt (argc, argv, "f:n:p:t:b:n:")) != -1){
          switch (c){
@@ -126,4 +128,9 @@ void* printThread(void * args){
 		ClientData::Instance()->print();
 	}
 	return (void*)0;
+}
+void signalHandler( int signum )
+{
+	printf("Interupt: %d\n",signum);
+	ClientData::Instance()->cleanup(signum);
 }
