@@ -23,7 +23,7 @@
 
 #define BUFLEN 255
 #define TCP_PORT 7000
-#define MAXCLIENTS 100000
+#define MAXCLIENTS 10000
 
 
 

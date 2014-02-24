@@ -127,16 +127,20 @@ int SelectServer::run()
 		nready = select ( maxfd + 1, &rset, NULL, NULL, NULL);
 		if (FD_ISSET(serverSock, &rset)) {
 			//new connection
+
 			int sock = accept_client();
+			if(sock <=0){
+				break;
+			}
 			for (i = 0; i < MAXCLIENTS; i++){
 				if (client[i] < 0){
 					client[i] = sock;	// save descriptor
 					break;
-            			}
+	    			}
 			}
 			if (i == FD_SETSIZE){
 				printf ("Too many clients\n");
-        			break;
+				break;
     			}
 			FD_SET (sock, &allset);     // add new descriptor to set
 			if (sock > maxfd){
@@ -148,6 +152,8 @@ int SelectServer::run()
 			if (--nready <= 0){
 				continue;
 			}
+		
+			
 		}
 		for (i = 0; i <= maxi; i++){	// check all clients for data
      			int sockfd;
@@ -280,7 +286,7 @@ int SelectServer::accept_client()
 	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1)
 	{
 		fprintf(stderr, "Can't accept client\n");
-		exit(1);
+		return -1;
 	}
 	
 	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
@@ -309,7 +315,7 @@ int SelectServer::accept_client()
 ----------------------------------------------------------------------------------------------------------------------*/
 void SelectServer::send_msgs(int socket, char * data)
 {
-	send(socket, data, BUFLEN, 0);
+	send(socket, data, _buflen, 0);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -333,7 +339,7 @@ void SelectServer::send_msgs(int socket, char * data)
 ----------------------------------------------------------------------------------------------------------------------*/
 int SelectServer::recv_msgs(int socket, char * bp)
 {
-	int n, bytes_to_read = BUFLEN;
+	int n, bytes_to_read = _buflen;
 	printf("recv %d\n", socket);
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
@@ -398,8 +404,8 @@ int SelectServer::set_sock_option(int listenSocket)
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
-	// Set buffer length to send or receive to BUFLEN.
-	value = BUFLEN;
+	// Set buffer length to send or receive to _buflen.
+	value = _buflen;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
@@ -437,7 +443,7 @@ void * SelectServer::process_client(void * args)
 
 		mServer->fd_queue.pop(sock, mServer->timeout);
 
-		//printf("fd socket from queue%d\n", sock);
+		printf("fd socket from queue%d\n", sock);
 		if(!ClientData::Instance()->has(sock)){
 			continue;
 		}

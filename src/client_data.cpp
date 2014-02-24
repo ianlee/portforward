@@ -135,7 +135,7 @@ int ClientData::print(){
 	}
 	_mutex.unlock();
 	avgRtt = totalRtt / numClients;
-	fprintf(_file,"clients: %lu \tRTT: %lf\n", size, avgRtt);
+	fprintf(_file,"clients: %lu \tRTT: %lf \tcalcsize:%d\n", size, avgRtt,numClients);
 	fflush(_file);
 	return list_of_clients.size();
 }
@@ -168,6 +168,7 @@ int ClientData::addClient(int socket, char* client_addr, int client_port){
 	tempData.num_request=0;
 	tempData.rtt = 0;
 	tempData.amount_data=0;
+	tempData.lasttime = 0;
 	tempData.last_time.tv_sec = 0;
 	tempData.last_time.tv_usec = 0;
 	
@@ -277,20 +278,24 @@ int ClientData::setRtt(int socket){
 	int rtt = -1;
 	struct timeval currTime;
 	gettimeofday(&currTime,NULL);
+	long thistime = currTime.tv_sec * 1000000 + currTime.tv_usec;
+
 	_mutex.lock();
 	std::map<int,client_data>::iterator data = list_of_clients.find(socket);
 	_mutex.unlock();
 	if(data != list_of_clients.end()){
 		//std::cout << "found socket for rtt "<<data->second.last_time.tv_sec <<"."<<data->second.last_time.tv_usec<< std::endl;
-		if(data->second.last_time.tv_usec>0){
+		if(data->second.lasttime > 0){
 			
 //			gettimeofday(&currTime,NULL);
 			//calc rtt
-			rtt = (currTime.tv_sec - data->second.last_time.tv_sec ) * 1000000 + (currTime.tv_usec - data->second.last_time.tv_usec);
+//			printf("thistime: %ld", thistime);
+
+			rtt = thistime- data->second.lasttime;
 			data->second.rtt = rtt;
-			printf("RTT: %d\n",rtt);
+			//printf("this: %ld last: %ld RTT: %d\n",thistime, data->second.lasttime, rtt);
 		}
-		data->second.last_time = currTime;
+		data->second.lasttime = thistime;
 		++ data->second.num_request;
 	}
 	
