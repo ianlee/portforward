@@ -13,7 +13,7 @@
 --			  void EpollServer::listen_for_clients()
 --			  int EpollServer::accept_client()
 --			  void EpollServer::send_msgs(int socket, char * data)
---			  int EpollServer::recv_msgs(int socket, char * bp)
+--			  int EpollServer::recv_msgs(int so+cket, char * bp)
 --			  int EpollServer::set_sock_option(int listenSocket)
 --			  void * EpollServer::process_client(void * args)
 --			  int EpollServer::set_port(int port)
@@ -129,6 +129,14 @@ int EpollServer::run() {
 	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
 		fprintf(stderr,"epoll_ctl\n");
 	
+	epoll_loop();
+	
+	close(serverSock);
+	return 0;
+}
+
+int EpollServer::epoll_loop(){
+	int i;
 	while(true){
 		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
 		for (i = 0; i < nready; i++){	// check all clients for data
@@ -165,8 +173,7 @@ int EpollServer::run() {
  		}
 	
 	}
-	close(serverSock);
-	return 0;
+
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
