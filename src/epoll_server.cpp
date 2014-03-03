@@ -455,7 +455,7 @@ void * EpollServer::process_client(void * args)
 		ClientData::Instance()->setRtt(sock);
 		mServer->send_msgs(sock, buf);	
 		ClientData::Instance()->recordData(sock, mServer->_buflen);
-	}		            				
+	}		          				
 	return (void*)0;
 
 }
