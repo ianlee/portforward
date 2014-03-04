@@ -51,6 +51,7 @@ public:
 	int set_num_threads(int num);
 	int setBufLen(int buflen);
 	int _buflen;
+	int epoll_loop();
 private:
 
 	int 	serverSock, _port, _numThreads;

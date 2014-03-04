@@ -1,5 +1,5 @@
-#include "multi_thread_server.h"
-#include "select_server.h"
+/*#include "multi_thread_server.h"
+#include "select_server.h"*/
 #include "epoll_server.h"
 #include <time.h>
 void* printThread(void * args);
@@ -30,8 +30,8 @@ int main(int argc, char **argv)
 	int port = TCP_PORT;
 	int serverType = 3;
 	int numberWorkers = 10;
-	MultiThreadServer* server1;
-	SelectServer* server2;
+	/*MultiThreadServer* server1;
+	SelectServer* server2;*/
 	EpollServer* server3;
 	const char* filename = "test/tests.txt";
 	int buflen = 255;
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	
 	//start server
 	switch(serverType){
-		case 1:
+		/*case 1:
 			server1 = MultiThreadServer::Instance();
 			server1->set_port(port);
 			server1->setBufLen(buflen);
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 			server2->setBufLen(buflen);
 			server2->set_num_threads(numberWorkers);
 			server2->run();
-			break;
+			break;*/
 		case 3:
 		default:
 			server3 = EpollServer::Instance();
