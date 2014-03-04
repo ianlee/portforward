@@ -72,12 +72,12 @@
 --
 -- NOTES: Creates an instance of epoll server.
 ----------------------------------------------------------------------------------------------------------------------*/
-EpollServer* EpollServer::Instance()
+/*EpollServer* EpollServer::Instance()
 {
 	static EpollServer m_pInstance;
 
 	return &m_pInstance;
-}
+}*/
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: run
@@ -98,18 +98,40 @@ EpollServer* EpollServer::Instance()
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::run() {
 	pthread_t tids[_numThreads];
+	pthread_t listenThread;
+	pthread_t clientThread;
+	epoll_loop_struct listenData;
+	epoll_loop_struct clientData;
 	int i;
 
 	
-	for(int i = 0; i < _numThreads; i++)
+	for(i = 0; i < _numThreads; i++)
 	{
-		pthread_create(&tids[i], NULL, process_client, NULL);
+		pthread_create(&tids[i], NULL, process_client,(void*) this);
 	}
 	
+	create_listen_sockets();
+	/*epoll loop should be in multiple threads: 1 for listen sockets, 1 for client sockets*/
+	listenData.inst = this;
+	clientData.inst = this;
+	listenData.fd = epoll_fd;
+	clientData.fd = epoll_client_fd;
 	
-	
+	pthread_create(&listenThread, NULL, epoll_loop, (void*) &listenData);
+	pthread_create(&clientThread, NULL, epoll_loop, (void*) &clientData);
+/*	epoll_loop(epoll_fd);
+	epoll_loop(epoll_client_fd);*/
+	sleep(1);
+
+	return 0;
+}
+
+
+int EpollServer::create_listen_sockets(){
+
+	struct epoll_event event;
 	serverSock = create_socket();
-	serverSock = bind_socket();
+	serverSock = bind_socket(_port);
 	serverSock = set_sock_option(serverSock);
 	
 
@@ -123,58 +145,18 @@ int EpollServer::run() {
 	epoll_fd = epoll_create(MAXCLIENTS);
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
+	epoll_client_fd = epoll_create(MAXCLIENTS);
+	if (epoll_fd == -1) 
+		fprintf(stderr,"epoll_create\n");
 	// Add the server socket to the epoll event loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = serverSock;
 	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
 		fprintf(stderr,"epoll_ctl\n");
 	
-	epoll_loop();
-	
-	close(serverSock);
-	return 0;
+	return epoll_fd;
 }
 
-int EpollServer::epoll_loop(){
-	int i;
-	while(true){
-		nready = epoll_wait (epoll_fd, events, MAXCLIENTS, -1);
-		for (i = 0; i < nready; i++){	// check all clients for data
-
-		// Case 1: Error condition
-    		if (events[i].events & (EPOLLHUP)) {
-			fputs("epoll: EPOLLHUP", stderr);
-			int sock = events[i].data.fd;
-			close(sock);
-			ClientData::Instance()->removeClient(sock);
-			continue;
-    		}
-    		if (events[i].events & ( EPOLLERR)) {
-			fputs("epoll: EPOLLERR", stderr);
-			int sock = events[i].data.fd;
-			close(sock);
-			ClientData::Instance()->removeClient(sock);
-			continue;
-    		}
-	
-    		assert (events[i].events & EPOLLIN);
-
-	    	// Case 2: Server is receiving a connection request
-	    	if (events[i].data.fd == serverSock) {
-
-				while(accept_client()>1);
-				continue;
-    		}
-
-    		// Case 3: One of the sockets has read data
-
-			fd_queue.push(events[i].data.fd, timeout);
-
- 		}
-	
-	}
-
-}
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: create_socket
@@ -221,14 +203,14 @@ int EpollServer::create_socket()
 --
 -- NOTES: Function that binds an address to the server socket and returns the server socket.
 ----------------------------------------------------------------------------------------------------------------------*/
-int EpollServer::bind_socket()
+int EpollServer::bind_socket(int port)
 {
 	struct	sockaddr_in server;
 
 	// Bind an address to the socket
 	bzero((char *)&server, sizeof(struct sockaddr_in));
 	server.sin_family = AF_INET;
-	server.sin_port = htons(_port);
+	server.sin_port = htons(port);
 	server.sin_addr.s_addr = htonl(INADDR_ANY); // Accept connections from any client
 
 	if (bind(serverSock, (struct sockaddr *)&server, sizeof(server)) == -1)
@@ -282,7 +264,7 @@ void EpollServer::listen_for_clients()
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::accept_client()
 {
-	
+	struct epoll_event event;
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
 	int sServerSock;
@@ -295,14 +277,15 @@ int EpollServer::accept_client()
 		}
 		
 	}
-	
+
 	// Make the fd_new non-blocking
 	if (fcntl (sServerSock, F_SETFL, O_NONBLOCK | fcntl(sServerSock, F_GETFL, 0)) == -1) {
 		fprintf(stderr,"fcntl\n");
 	}
 	// Add the new socket descriptor to the epoll loop
+	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = sServerSock;
-	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) {
+	if (epoll_ctl (epoll_client_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) {
 		fprintf(stderr,"epoll_ctl\n");
 	}
 	
@@ -440,8 +423,8 @@ int EpollServer::set_sock_option(int listenSocket)
 void * EpollServer::process_client(void * args)
 {	
 	int sock;
-
-	EpollServer* mServer = EpollServer::Instance();
+	EpollServer* mServer = (EpollServer*) args;
+	/*EpollServer* mServer = EpollServer::Instance();*/
 	char buf[mServer->_buflen];	
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
@@ -458,6 +441,54 @@ void * EpollServer::process_client(void * args)
 	}		          				
 	return (void*)0;
 
+}
+
+void* EpollServer::epoll_loop(void * args){
+
+	epoll_loop_struct* epollstruct = (epoll_loop_struct*) args;
+	int local_epoll_fd = epollstruct->fd;
+	EpollServer* mServer = epollstruct->inst;
+	int i;
+	int nready;
+	struct epoll_event mevents[MAXCLIENTS];
+	
+	while(true){
+		nready = epoll_wait (local_epoll_fd, mevents, MAXCLIENTS, -1);
+		for (i = 0; i < nready; i++){	// check all clients for data
+
+			// Case 1: Error condition
+	    		if (mevents[i].events & (EPOLLHUP)) {
+				fputs("epoll: EPOLLHUP", stderr);
+				int sock = mevents[i].data.fd;
+				close(sock);
+				ClientData::Instance()->removeClient(sock);
+				continue;
+	    		}
+	    		if (mevents[i].events & ( EPOLLERR)) {
+				fputs("epoll: EPOLLERR", stderr);
+				int sock = mevents[i].data.fd;
+				close(sock);
+				ClientData::Instance()->removeClient(sock);
+				continue;
+	    		}
+	
+	    		assert (mevents[i].events & EPOLLIN);
+
+		    	// Case 2: Server is receiving a connection request
+			if (mevents[i].data.fd == mServer->serverSock) {
+
+				while(mServer->accept_client()>1);
+				continue;
+	    		}
+
+	    		// Case 3: One of the sockets has read data
+
+			mServer->fd_queue.push(mevents[i].data.fd, mServer->timeout);
+
+ 		}
+	
+	}
+	return (void*) 0;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 

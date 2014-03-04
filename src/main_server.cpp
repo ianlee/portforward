@@ -87,14 +87,15 @@ int main(int argc, char **argv)
 			break;*/
 		case 3:
 		default:
-			server3 = EpollServer::Instance();
+			/*server3 = EpollServer::Instance();*/
+			server3 = new EpollServer;
 			server3->set_port(port);
 			server3->setBufLen(buflen);
 			server3->set_num_threads(numberWorkers);
 			server3->run();
 			break;
 	}
-	
+	pthread_exit(NULL);
 
 	return 0;
 }

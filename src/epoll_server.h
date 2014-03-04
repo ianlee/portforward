@@ -31,7 +31,6 @@
 
 
 
-
 class EpollServer {
 
 public:
@@ -41,7 +40,7 @@ public:
 
 	int run();
 	int create_socket();
-	int bind_socket();
+	int bind_socket(int port);
 	void listen_for_clients();
 	int accept_client();
 	void send_msgs(int socket, char * data);
@@ -51,22 +50,28 @@ public:
 	int set_num_threads(int num);
 	int setBufLen(int buflen);
 	int _buflen;
-	int epoll_loop();
+	
+	int create_listen_sockets();
 private:
 
 	int 	serverSock, _port, _numThreads;
 	static void * process_client(void * args);
-
+	static void * epoll_loop(void* args);
 	
 	blocking_queue<int> fd_queue;
 	
 	int epoll_fd;
+	int epoll_client_fd;
 	int maxfd;
 	int maxi;
-	int nready;
+	//int nready;
 
-	struct epoll_event events[MAXCLIENTS], event;
+//	struct epoll_event events[MAXCLIENTS], event;
 };
 
+struct epoll_loop_struct {
+	int fd;
+	EpollServer* inst;
+};
 #endif
 
