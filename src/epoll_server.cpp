@@ -116,6 +116,8 @@ int EpollServer::run() {
 	clientData.inst = this;
 	listenData.fd = epoll_fd;
 	clientData.fd = epoll_client_fd;
+	listenData.type = 1;
+	clientData.type = 2;
 	
 	
 	for(i = 0; i < _numThreads; i++)
@@ -134,8 +136,8 @@ int EpollServer::run() {
 
 int EpollServer::create_listen_sockets(){
 	conf = new Config;
-	conf.setFilename("./conf.txt");
-	conf.parseFile();
+	conf->setFilename("./config.txt");
+	conf->parseFile();
 	
 	struct epoll_event event;
 	int port;
@@ -145,7 +147,7 @@ int EpollServer::create_listen_sockets(){
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
 	
-	while(port = conf.getPort()){
+	while((port = conf->getPort() )){
 		socket = create_socket();
 		socket = bind_socket(socket, port);
 		socket = set_sock_option(socket);
@@ -313,7 +315,10 @@ int EpollServer::connect_to_dest(int sSocket)
 	struct sockaddr_in server;
 	struct hostent	*hostptr;
 	int socket = create_socket();
-	DestData destInfo = conf.getData(sSocket);
+	DestData destInfo;
+	if( conf->getData(sSocket, &destInfo) ) {
+	    exit(1);
+	}
 
 	bzero((char *)&server, sizeof(struct sockaddr_in));
 	server.sin_family = AF_INET;
@@ -493,6 +498,7 @@ void* EpollServer::epoll_loop(void * args){
 	epoll_loop_struct* epollstruct = (epoll_loop_struct*) args;
 	int local_epoll_fd = epollstruct->fd;
 	EpollServer* mServer = epollstruct->inst;
+	int type = epollstruct->type;
 	int i;
 	int nready;
 	struct epoll_event mevents[MAXCLIENTS];
@@ -520,9 +526,9 @@ void* EpollServer::epoll_loop(void * args){
 	    		assert (mevents[i].events & EPOLLIN);
 
 		    	// Case 2: Server is receiving a connection request
-			if (mevents[i].data.fd == mServer->serverSock) {
-
-				while(mServer->accept_client()>1);
+			//if (mevents[i].data.fd == mServer->serverSock) {
+            if(type==1){
+				while(mServer->accept_client(mevents[i].data.fd)>1);
 				continue;
 	    		}
 

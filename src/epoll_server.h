@@ -64,7 +64,7 @@ private:
 	
 	int epoll_fd;
 	int epoll_client_fd;
-	Config conf;
+	Config* conf;
 	
 	
 	//int nready;
@@ -75,6 +75,7 @@ private:
 struct epoll_loop_struct {
 	int fd;
 	EpollServer* inst;
+	int type;
 };
 #endif
 
