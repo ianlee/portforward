@@ -22,9 +22,10 @@ class Config
 		int parseFile();
 	private:
 		FILE *fp;
-		int clntPort, destPort;
+		int socketDesc, clntPort, destPort;
 		char destAddr[BUFLEN];
 		std::map<int, DestData> forward_list;
+		std::map<int, DestData> socketDesc_list;
 		
 };
 

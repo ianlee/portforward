@@ -4,9 +4,9 @@ int Config::parseFile()
 {
 	struct DestData temp;
 
-	while(fscanf(fp, "%d %s %d", &clntPort, destAddr, &destPort))
+	while(fscanf(fp, "%d %s %d", &clntPort, destAddr, &destPort) == 3)
 	{
-		strncpy(temp.destAddr, destAddr, strlen(destAddr));
+		strcpy(temp.destAddr, destAddr);
 		temp.destPort = destPort;
 		forward_list.insert(std::pair<int, DestData>(clntPort, temp));
 	}
@@ -18,8 +18,8 @@ void Config::printForwardList()
 {
 	for(std::map<int, DestData>::iterator it = forward_list.begin(); it != forward_list.end(); ++it)
 	{
-		std::cout << "Client Port: " << it->first << "\tServer Dest Host: " << it->second.destAddr;
-		std::cout << "\tServer Dest Port: " << it->second.destPort << std::endl;
+		std::cout << "Client Port: " << it->first << " Server Dest Host: " << it->second.destAddr;
+		std::cout << " Server Dest Port: " << it->second.destPort << std::endl;
 	}
 }
 int Config::setFilename(const char * filename)
