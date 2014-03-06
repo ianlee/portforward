@@ -4,6 +4,7 @@
 #include "client_data.h"
 #include "blocking_queue.h"
 #include "config.h"
+#include "pair_sockets.h"
 
 #include <atomic>
 #include <iostream>
@@ -54,6 +55,7 @@ public:
 	
 	int create_listen_sockets();
 	int connect_to_dest(int sSocket);
+	PairSockets pairSock;
 private:
 
 	int 	/*serverSock,*/ _port, _numThreads;
@@ -65,6 +67,7 @@ private:
 	int epoll_fd;
 	int epoll_client_fd;
 	Config* conf;
+
 	
 	
 	//int nready;

@@ -15,14 +15,17 @@ client_data.o : client_data.cpp client_data.h
 config.o : config.cpp config.h
 	${CC} ${CFLAGS} -c config.cpp
 
+pair_sockets.o : pair_sockets.cpp pair_sockets.h
+	${CC} ${CFLAGS} -c pair_sockets.cpp
+	
 main_server.o : main_server.cpp epoll_server.h blocking_queue.h config.h
 	${CC} ${CFLAGS} -c main_server.cpp 
 
-epoll_server.o : epoll_server.cpp epoll_server.h blocking_queue.h  client_data.h config.h
+epoll_server.o : epoll_server.cpp epoll_server.h blocking_queue.h  client_data.h config.h pair_sockets.h
 	${CC} ${CFLAGS} -c epoll_server.cpp
 
-myprogram : main_server.o client_data.o epoll_server.o config.o
-	${CC} ${CFLAGS} main_server.o client_data.o epoll_server.o config.o ${LDFLAGS} -o ../server
+myprogram : main_server.o client_data.o epoll_server.o config.o pair_sockets.o
+	${CC} ${CFLAGS} main_server.o client_data.o epoll_server.o config.o pair_sockets.o ${LDFLAGS} -o ../server
 
 clean:
 	rm -rf *.o  *.cpp~ *.h~ ../client ../server

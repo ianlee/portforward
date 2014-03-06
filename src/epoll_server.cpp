@@ -306,6 +306,8 @@ int EpollServer::accept_client(int socket)
 	}
 	
 	//add both sockets to current connection list. //TODO::change this to client list.
+	pairSock.insertPairOfSockets(sSocket, dSocket);
+	
 	ClientData::Instance()->addClient(sSocket, inet_ntoa(client.sin_addr),client.sin_port );
 
 	return sSocket;
@@ -473,21 +475,24 @@ int EpollServer::set_sock_option(int listenSocket)
 void * EpollServer::process_client(void * args)
 {	
 	int sock;
+	int dsock;
 	EpollServer* mServer = (EpollServer*) args;
 	/*EpollServer* mServer = EpollServer::Instance();*/
 	char buf[mServer->_buflen];	
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
-		if(!ClientData::Instance()->has(sock)){
+	/*	if(!ClientData::Instance()->has(sock)){
 			continue;
-		}
-		
+		}*/
+		dsock = mServer->pairSock.getSocketFromList(sock);
+		if(dsock ==-1) continue;
 		if(mServer->recv_msgs(sock, buf)<0){
 			continue;
 		}
-		ClientData::Instance()->setRtt(sock);
-		mServer->send_msgs(sock, buf);	
-		ClientData::Instance()->recordData(sock, mServer->_buflen);
+
+//		ClientData::Instance()->setRtt(sock);
+		mServer->send_msgs(dsock, buf);	
+//		ClientData::Instance()->recordData(sock, mServer->_buflen);
 	}		          				
 	return (void*)0;
 
