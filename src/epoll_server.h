@@ -3,6 +3,7 @@
 
 #include "client_data.h"
 #include "blocking_queue.h"
+#include "config.h"
 
 #include <atomic>
 #include <iostream>
@@ -40,9 +41,9 @@ public:
 
 	int run();
 	int create_socket();
-	int bind_socket(int port);
-	void listen_for_clients();
-	int accept_client();
+	int bind_socket(int socket, int port);
+	void listen_for_clients(int socket);
+	int accept_client(int socket);
 	void send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * bp);
 	int set_sock_option(int listenSocket);
@@ -52,9 +53,10 @@ public:
 	int _buflen;
 	
 	int create_listen_sockets();
+	int connect_to_dest(int sSocket);
 private:
 
-	int 	serverSock, _port, _numThreads;
+	int 	/*serverSock,*/ _port, _numThreads;
 	static void * process_client(void * args);
 	static void * epoll_loop(void* args);
 	
@@ -62,8 +64,9 @@ private:
 	
 	int epoll_fd;
 	int epoll_client_fd;
-	int maxfd;
-	int maxi;
+	Config conf;
+	
+	
 	//int nready;
 
 //	struct epoll_event events[MAXCLIENTS], event;

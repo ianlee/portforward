@@ -105,18 +105,23 @@ int EpollServer::run() {
 	int i;
 
 	
-	for(i = 0; i < _numThreads; i++)
-	{
-		pthread_create(&tids[i], NULL, process_client,(void*) this);
-	}
+	
 	
 	create_listen_sockets();
+	epoll_client_fd = epoll_create(MAXCLIENTS);
+	if (epoll_client_fd == -1) 
+		fprintf(stderr,"epoll_create\n");
 	/*epoll loop should be in multiple threads: 1 for listen sockets, 1 for client sockets*/
 	listenData.inst = this;
 	clientData.inst = this;
 	listenData.fd = epoll_fd;
 	clientData.fd = epoll_client_fd;
 	
+	
+	for(i = 0; i < _numThreads; i++)
+	{
+		pthread_create(&tids[i], NULL, process_client,(void*) this);
+	}
 	pthread_create(&listenThread, NULL, epoll_loop, (void*) &listenData);
 	pthread_create(&clientThread, NULL, epoll_loop, (void*) &clientData);
 /*	epoll_loop(epoll_fd);
@@ -128,32 +133,35 @@ int EpollServer::run() {
 
 
 int EpollServer::create_listen_sockets(){
-
-	struct epoll_event event;
-	serverSock = create_socket();
-	serverSock = bind_socket(_port);
-	serverSock = set_sock_option(serverSock);
+	conf = new Config;
+	conf.setFilename("./conf.txt");
+	conf.parseFile();
 	
-
-	// Make the server listening socket non-blocking
-	if (fcntl (serverSock, F_SETFL, O_NONBLOCK | fcntl (serverSock, F_GETFL, 0)) == -1) 
-		fprintf(stderr,"fcntl\n");
-	listen_for_clients();	
-	maxfd = serverSock;
-	maxi = -1;
+	struct epoll_event event;
+	int port;
+	int socket;
 	
 	epoll_fd = epoll_create(MAXCLIENTS);
 	if (epoll_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
-	epoll_client_fd = epoll_create(MAXCLIENTS);
-	if (epoll_fd == -1) 
-		fprintf(stderr,"epoll_create\n");
-	// Add the server socket to the epoll event loop
-	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
-	event.data.fd = serverSock;
-	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, serverSock, &event) == -1) 
-		fprintf(stderr,"epoll_ctl\n");
 	
+	while(port = conf.getPort()){
+		socket = create_socket();
+		socket = bind_socket(socket, port);
+		socket = set_sock_option(socket);
+		
+
+		// Make the server listening socket non-blocking
+		if (fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL, 0)) == -1) 
+			fprintf(stderr,"fcntl\n");
+		listen_for_clients(socket);	
+		
+		// Add the server socket to the epoll event loop
+		event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
+		event.data.fd = socket;
+		if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, socket, &event) == -1) 
+			fprintf(stderr,"epoll_ctl\n");
+	}
 	return epoll_fd;
 }
 
@@ -197,13 +205,13 @@ int EpollServer::create_socket()
 --
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
--- INTERFACE: int EpollServer::bind_socket()
+-- INTERFACE: int EpollServer::bind_socket(int socket, int port)
 --
 -- RETURNS:  Server Socket Descriptor
 --
 -- NOTES: Function that binds an address to the server socket and returns the server socket.
 ----------------------------------------------------------------------------------------------------------------------*/
-int EpollServer::bind_socket(int port)
+int EpollServer::bind_socket(int socket, int port)
 {
 	struct	sockaddr_in server;
 
@@ -213,12 +221,12 @@ int EpollServer::bind_socket(int port)
 	server.sin_port = htons(port);
 	server.sin_addr.s_addr = htonl(INADDR_ANY); // Accept connections from any client
 
-	if (bind(serverSock, (struct sockaddr *)&server, sizeof(server)) == -1)
+	if (bind(socket, (struct sockaddr *)&server, sizeof(server)) == -1)
 	{
 		perror("Can't bind name to socket");
 		exit(1);
 	}
-	return serverSock;
+	return socket;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -238,11 +246,11 @@ int EpollServer::bind_socket(int port)
 --
 -- NOTES: Sets the number of clients the server will handle requests to.
 ----------------------------------------------------------------------------------------------------------------------*/
-void EpollServer::listen_for_clients()
+void EpollServer::listen_for_clients(int socket)
 {
 	// Listen for connections
 	
-	listen(serverSock, SOMAXCONN);
+	listen(socket, SOMAXCONN);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -262,13 +270,13 @@ void EpollServer::listen_for_clients()
 --
 -- NOTES: Function that blocks until a client connection request comes in. It will add the client to the list.
 ----------------------------------------------------------------------------------------------------------------------*/
-int EpollServer::accept_client()
+int EpollServer::accept_client(int socket)
 {
 	struct epoll_event event;
 	struct	sockaddr_in client;
 	unsigned int client_len = sizeof(client);
-	int sServerSock;
-	if ((sServerSock = accept (serverSock, (struct sockaddr *)&client, &client_len)) == -1){
+	int sSocket, dSocket;
+	if ((sSocket = accept (socket, (struct sockaddr *)&client, &client_len)) == -1){
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
 			fprintf(stderr, "Can't accept client\n");
 			return -1;
@@ -279,20 +287,57 @@ int EpollServer::accept_client()
 	}
 
 	// Make the fd_new non-blocking
-	if (fcntl (sServerSock, F_SETFL, O_NONBLOCK | fcntl(sServerSock, F_GETFL, 0)) == -1) {
+	if (fcntl (sSocket, F_SETFL, O_NONBLOCK | fcntl(sSocket, F_GETFL, 0)) == -1) {
 		fprintf(stderr,"fcntl\n");
 	}
-	// Add the new socket descriptor to the epoll loop
+	//create socket connecting to destination
+	dSocket = connect_to_dest(sSocket);
+	// Add the new socket descriptors to the epoll loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
-	event.data.fd = sServerSock;
-	if (epoll_ctl (epoll_client_fd, EPOLL_CTL_ADD, sServerSock, &event) == -1) {
+	event.data.fd = sSocket;
+	if (epoll_ctl (epoll_client_fd, EPOLL_CTL_ADD, sSocket, &event) == -1) {
+		fprintf(stderr,"epoll_ctl\n");
+	}
+	event.data.fd = dSocket;
+	if (epoll_ctl (epoll_client_fd, EPOLL_CTL_ADD, dSocket, &event) == -1) {
 		fprintf(stderr,"epoll_ctl\n");
 	}
 	
-	
-	ClientData::Instance()->addClient(sServerSock, inet_ntoa(client.sin_addr),client.sin_port );
+	//add both sockets to current connection list. //TODO::change this to client list.
+	ClientData::Instance()->addClient(sSocket, inet_ntoa(client.sin_addr),client.sin_port );
 
-	return sServerSock;
+	return sSocket;
+}
+int EpollServer::connect_to_dest(int sSocket)
+{
+	struct sockaddr_in server;
+	struct hostent	*hostptr;
+	int socket = create_socket();
+	DestData destInfo = conf.getData(sSocket);
+
+	bzero((char *)&server, sizeof(struct sockaddr_in));
+	server.sin_family = AF_INET;
+	server.sin_port = htons(destInfo.destPort);
+	if ((hostptr = gethostbyname(destInfo.destAddr)) == NULL)
+	{
+		fprintf(stderr, "Unknown server address\n");
+		exit(1);
+	}
+	bcopy(hostptr->h_addr, (char *)&server.sin_addr, hostptr->h_length);
+
+	if (connect (socket, (struct sockaddr *)&server, sizeof(server)) == -1)
+	{
+		fprintf(stderr, "Can't connect to server\n");
+		fflush(stderr);
+		perror("connect");
+		exit(1);
+		return 0;
+	}
+	if(socket > 0){
+		ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
+	}
+
+	return socket;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 

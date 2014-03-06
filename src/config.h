@@ -22,6 +22,9 @@ class Config
 		void printSocketList();
 		int parseFile();
 		int storeSocketIntoMap(const int port, const int socket);
+		int getPort();
+		int[] getPorts();
+		DestData getData(const int socket);
 	private:
 		FILE *fp;
 		int socketDesc, clntPort, destPort;
@@ -29,6 +32,7 @@ class Config
 		std::map<int, DestData> forward_list;
 		std::map<int, DestData> socketDesc_list;
 		
+		std::map<int, DestData>::iterator portIterator;
 };
 
 #endif
