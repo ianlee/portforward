@@ -22,17 +22,43 @@ void Config::printForwardList()
 		std::cout << " Server Dest Port: " << it->second.destPort << std::endl;
 	}
 }
+void Config::printSocketList()
+{
+	for(std::map<int, DestData>::iterator it = socketDesc_list.begin(); it != socketDesc_list.end(); ++it)
+	{
+		std::cout << "Socket Desc ID: " << it->first << " Server Dest Host: " << it->second.destAddr;
+		std::cout << " Server Dest Port: " << it->second.destPort << std::endl;
+	}
+}
 int Config::setFilename(const char * filename)
 {
 	fp = fopen(filename,"r+");
 	return (fp == NULL) ? -1 : 0;
 }
+int Config::storeSocketIntoMap(const int port, const int socket)
+{
+	std::map<int, DestData>::iterator it = forward_list.find(port);
 
+	if(it != forward_list.end())
+	{
+		socketDesc_list.insert(std::pair<int, DestData>(socket, it->second));
+		return 0;
+	}
+	else
+	{
+		std::cerr << "Can't find port " << port << " for inserting socket desc " << socket << std::endl;
+		return -1;
+	}
+
+}
 int main()
 {
 	Config config;
 	config.setFilename("test.txt");
 	config.parseFile();
 	config.printForwardList();
+
+	config.storeSocketIntoMap(13000, 3);
+	config.printSocketList();
 	return 0;
 }

@@ -19,7 +19,9 @@ class Config
 	public:
 		int setFilename(const char * filename);
 		void printForwardList();
+		void printSocketList();
 		int parseFile();
+		int storeSocketIntoMap(const int port, const int socket);
 	private:
 		FILE *fp;
 		int socketDesc, clntPort, destPort;
