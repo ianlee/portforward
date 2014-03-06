@@ -23,8 +23,8 @@ class Config
 		int parseFile();
 		int storeSocketIntoMap(const int port, const int socket);
 		int getPort();
-		int[] getPorts();
-		DestData getData(const int socket);
+
+		int getData(const int socket, DestData * data);
 	private:
 		FILE *fp;
 		int socketDesc, clntPort, destPort;

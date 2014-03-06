@@ -53,31 +53,27 @@ int Config::storeSocketIntoMap(const int port, const int socket)
 
 }
 
-int[] Config::getPorts(){
-	int i=0;
-	int arr[socketDesc_list.size()];
-	for(std::map<int, DestData>::iterator it = socketDesc_list.begin(); it != socketDesc_list.end(); ++it)
-	{
-		arr[i++]=it->first;
-	}
-	return arr;
-}
+
 int Config::getPort(){
-	int rtn;
-	rtn = portIterator->first;
-	++portIterator;
+	int rtn = 0;
+	if(portIterator != forward_list.end()){
+
+	    rtn = portIterator->first;
+	    ++portIterator;
+	}
 	return rtn;
 }
-DestData Config::getData(const int socket){
+int Config::getData(const int socket, DestData* data){
 	std::map<int, DestData>::iterator it = socketDesc_list.find(socket);
 
 	if(it != socketDesc_list.end())
 	{
-		return  it->second;
+	    data = &(it->second);
+		return  1;
 	}
 	else
 	{
 		std::cerr << "Can't find socket desc " << socket << std::endl;
-		return NULL;
+		return 0;
 	}
 }
