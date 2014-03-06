@@ -51,14 +51,3 @@ int Config::storeSocketIntoMap(const int port, const int socket)
 	}
 
 }
-int main()
-{
-	Config config;
-	config.setFilename("test.txt");
-	config.parseFile();
-	config.printForwardList();
-
-	config.storeSocketIntoMap(13000, 3);
-	config.printSocketList();
-	return 0;
-}
