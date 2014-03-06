@@ -151,7 +151,7 @@ int EpollServer::create_listen_sockets(){
 		socket = create_socket();
 		socket = bind_socket(socket, port);
 		socket = set_sock_option(socket);
-		
+		conf->storeSocketIntoMap(port, socket);
 
 		// Make the server listening socket non-blocking
 		if (fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL, 0)) == -1) 
