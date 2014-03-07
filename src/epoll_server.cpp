@@ -367,9 +367,9 @@ int EpollServer::connect_to_dest(int sSocket)
 --
 -- NOTES: Send Messages function used by the epoll server.
 ----------------------------------------------------------------------------------------------------------------------*/
-void EpollServer::send_msgs(int socket, char * data)
+void EpollServer::send_msgs(int socket, char * data, int blen)
 {
-	send(socket, data, _buflen, 0);
+	send(socket, data, blen, 0);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -394,6 +394,7 @@ void EpollServer::send_msgs(int socket, char * data)
 int EpollServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = _buflen;
+	int blen = 0;
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
 		
@@ -416,9 +417,13 @@ int EpollServer::recv_msgs(int socket, char * bp)
 		}
 		bp += n;
 		bytes_to_read -= n;
+		blen+=n;
+	}
+	if(n>0){
+		blen +=n;
 	}
 
-	return 0;
+	return blen;
 }
 
 int EpollServer::removeSocket(int socket){
