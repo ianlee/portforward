@@ -490,6 +490,7 @@ void * EpollServer::process_client(void * args)
 {	
 	int sock;
 	int dsock;
+	int blen;
 	EpollServer* mServer = (EpollServer*) args;
 	/*EpollServer* mServer = EpollServer::Instance();*/
 	char buf[mServer->_buflen];	
@@ -500,12 +501,12 @@ void * EpollServer::process_client(void * args)
 		}*/
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
-		if(mServer->recv_msgs(sock, buf)<0){
+		if((blen=mServer->recv_msgs(sock, buf))<0){
 			continue;
 		}
 
 //		ClientData::Instance()->setRtt(sock);
-		mServer->send_msgs(dsock, buf);	
+		mServer->send_msgs(dsock, buf, blen);	
 //		ClientData::Instance()->recordData(sock, mServer->_buflen);
 	}		          				
 	return (void*)0;
