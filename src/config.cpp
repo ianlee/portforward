@@ -68,7 +68,10 @@ int Config::getData(const int socket, DestData* data){
 
 	if(it != socketDesc_list.end())
 	{
-	    data = &(it->second);
+	    for(int i = 0; i< BUFLEN; ++i){
+    	    data->destAddr[i]=it->second.destAddr[i];
+	    }
+        data->destPort=it->second.destPort;
 		return  1;
 	}
 	else

@@ -18,7 +18,7 @@ int PairSockets::removeSocketFromList(const int keySocket)
 	if(it != socket_list.end())
 	{
 		int destSocket = it->second;
-		socket_list.erase(it);
+		socket_list.erase(it->first);
 		socket_list.erase(destSocket);
 		return 0;
 	}

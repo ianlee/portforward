@@ -47,6 +47,7 @@ public:
 	int accept_client(int socket);
 	void send_msgs(int socket, char * data);
 	int recv_msgs(int socket, char * bp);
+	int removeSocket(int socket);
 	int set_sock_option(int listenSocket);
 	int set_port(int port);
 	int set_num_threads(int num);

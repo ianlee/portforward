@@ -148,11 +148,12 @@ int EpollServer::create_listen_sockets(){
 		fprintf(stderr,"epoll_create\n");
 	
 	while((port = conf->getPort() )){
+
 		socket = create_socket();
 		socket = bind_socket(socket, port);
 		socket = set_sock_option(socket);
 		conf->storeSocketIntoMap(port, socket);
-
+    	printf("create socket %d for port %d\n", socket, port);
 		// Make the server listening socket non-blocking
 		if (fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL, 0)) == -1) 
 			fprintf(stderr,"fcntl\n");
@@ -293,7 +294,7 @@ int EpollServer::accept_client(int socket)
 		fprintf(stderr,"fcntl\n");
 	}
 	//create socket connecting to destination
-	dSocket = connect_to_dest(sSocket);
+	dSocket = connect_to_dest(socket);
 	// Add the new socket descriptors to the epoll loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = sSocket;
@@ -318,7 +319,7 @@ int EpollServer::connect_to_dest(int sSocket)
 	struct hostent	*hostptr;
 	int socket = create_socket();
 	DestData destInfo;
-	if( conf->getData(sSocket, &destInfo) ) {
+	if( !conf->getData(sSocket, &destInfo) ) {
 	    exit(1);
 	}
 
@@ -403,12 +404,14 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
-			close(socket);
+			removeSocket(socket);
+			//close(socket);
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
-			close(socket);
+			removeSocket(socket);
+//			close(socket);
 			return -1;
 		}
 		bp += n;
@@ -416,6 +419,12 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	}
 
 	return 0;
+}
+
+int EpollServer::removeSocket(int socket){
+    close(socket);
+    close(pairSock.getSocketFromList(socket));
+    return pairSock.removeSocketFromList(socket);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -516,14 +525,16 @@ void* EpollServer::epoll_loop(void * args){
 	    		if (mevents[i].events & (EPOLLHUP)) {
 				fputs("epoll: EPOLLHUP", stderr);
 				int sock = mevents[i].data.fd;
-				close(sock);
+				//close(sock);
+				mServer->removeSocket(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
 	    		}
 	    		if (mevents[i].events & ( EPOLLERR)) {
 				fputs("epoll: EPOLLERR", stderr);
 				int sock = mevents[i].data.fd;
-				close(sock);
+				//close(sock);
+				mServer->removeSocket(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
 	    		}
@@ -533,12 +544,13 @@ void* EpollServer::epoll_loop(void * args){
 		    	// Case 2: Server is receiving a connection request
 			//if (mevents[i].data.fd == mServer->serverSock) {
             if(type==1){
+                printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
 				while(mServer->accept_client(mevents[i].data.fd)>1);
 				continue;
 	    		}
 
 	    		// Case 3: One of the sockets has read data
-
+            //printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
 			mServer->fd_queue.push(mevents[i].data.fd, mServer->timeout);
 
  		}
