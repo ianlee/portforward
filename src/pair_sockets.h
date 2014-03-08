@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <mutex>
 
 class PairSockets
 {
@@ -12,6 +13,7 @@ class PairSockets
 		int removeSocketFromList(const int keySocket);
 	private:
 		std::map<int, int> socket_list;
+		std::mutex _mutex;
 };
 
 #endif
