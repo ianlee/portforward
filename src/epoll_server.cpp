@@ -501,13 +501,13 @@ void * EpollServer::process_client(void * args)
 		}*/
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
-		if((blen=mServer->recv_msgs(sock, buf))<0){
-			continue;
-		}
+		while((blen=mServer->recv_msgs(sock, buf))>0){
+			
 
-//		ClientData::Instance()->setRtt(sock);
-		mServer->send_msgs(dsock, buf, blen);	
-//		ClientData::Instance()->recordData(sock, mServer->_buflen);
+			//ClientData::Instance()->setRtt(sock);
+			mServer->send_msgs(dsock, buf, blen);	
+			//ClientData::Instance()->recordData(sock, mServer->_buflen);
+		}
 	}		          				
 	return (void*)0;
 
