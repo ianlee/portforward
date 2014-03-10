@@ -427,11 +427,11 @@ int EpollServer::recv_msgs(int socket, char * bp)
 }
 
 int EpollServer::removeSocket(int socket){
-	int otherSocket = pairSock.getSocketFromList(socket)
+	int otherSocket = pairSock.getSocketFromList(socket);
 	pairSock.removeSocketFromList(socket);
     close(socket);
     close(otherSocket);
-    return 0
+    return 0;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
