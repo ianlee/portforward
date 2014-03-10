@@ -504,7 +504,7 @@ void * EpollServer::process_client(void * args)
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
 		while((blen=mServer->recv_msgs(sock, buf))>0){
-			
+			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf);
 
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf, blen);	
@@ -558,7 +558,7 @@ void* EpollServer::epoll_loop(void * args){
 	    		}
 
 	    		// Case 3: One of the sockets has read data
-            //printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
+            printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
 			mServer->fd_queue.push(mevents[i].data.fd, mServer->timeout);
 
  		}

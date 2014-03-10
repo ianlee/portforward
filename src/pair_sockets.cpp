@@ -11,7 +11,7 @@ int PairSockets::getSocketFromList(const int socket)
 	_mutex.lock();
 	std::map<int, int>::iterator it = socket_list.find(socket);
 	_mutex.unlock();
-	return (it != socket_list.end()) ? it->first : -1;
+	return (it != socket_list.end()) ? it->second : -1;
 }
 
 int PairSockets::removeSocketFromList(const int keySocket)
