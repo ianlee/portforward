@@ -495,7 +495,9 @@ void * EpollServer::process_client(void * args)
 	int blen;
 	EpollServer* mServer = (EpollServer*) args;
 	/*EpollServer* mServer = EpollServer::Instance();*/
-	char buf[mServer->_buflen];	
+	int maxCount=10;
+	char buf[maxCount][mServer->_buflen];	
+	count = 0;
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
 	/*	if(!ClientData::Instance()->has(sock)){
@@ -503,12 +505,18 @@ void * EpollServer::process_client(void * args)
 		}*/
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
-		while((blen=mServer->recv_msgs(sock, buf))>0){
+		while((blen=mServer->recv_msgs(sock, buf[count]))>0){
 			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf);
 
 			//ClientData::Instance()->setRtt(sock);
-			mServer->send_msgs(dsock, buf, blen);	
+			mServer->send_msgs(dsock, buf[count], blen);	
 			//ClientData::Instance()->recordData(sock, mServer->_buflen);
+			
+			count ++;
+			if(count = maxCount){
+				count = 0;
+			}
+			
 		}
 	}		          				
 	return (void*)0;
