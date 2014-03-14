@@ -405,15 +405,15 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
-			removeSocket(socket);
-			//close(socket);
-			return -1;
+			//removeSocket(socket);
+			close(socket);
+			return blen;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
-			removeSocket(socket);
-//			close(socket);
-			return -1;
+			//removeSocket(socket);
+			close(socket);
+			return blen;
 		}
 		bp += n;
 		bytes_to_read -= n;
@@ -460,12 +460,12 @@ int EpollServer::set_sock_option(int listenSocket)
 		perror("setsockopt failed\n");
 	
 	// Set buffer length to send or receive to _buflen.
-	value = _buflen;
+	/*value = _buflen;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
-		perror("setsockopt failed\n");
+		perror("setsockopt failed\n");*/
 
 	return listenSocket;
 
@@ -504,7 +504,7 @@ void * EpollServer::process_client(void * args)
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
 		while((blen=mServer->recv_msgs(sock, buf))>0){
-			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf);
+			printf("sock: %d to dsock %d blen %d recvd: %s\n",sock, dsock ,blen,buf);
 
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf, blen);	

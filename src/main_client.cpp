@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 	int buflen = 255;
 	int connections = 1000;
 	const char* filename = "test/client.txt";
-	signal(SIGINT, signalHandler);  
+	//signal(SIGINT, signalHandler);  
 	while ((c = getopt (argc, argv, "a:p:t:b:c:")) != -1){
          switch (c){
 			case 'p':
