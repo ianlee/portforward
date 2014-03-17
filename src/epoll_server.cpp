@@ -394,6 +394,7 @@ void EpollServer::send_msgs(int socket, char * data, int blen)
 int EpollServer::recv_msgs(int socket, char * bp)
 {
 	int n, bytes_to_read = _buflen;
+	int dsock;
 	int blen = 0;
 	while ((n = recv (socket, bp, bytes_to_read, 0)) < bytes_to_read)
 	{
@@ -405,15 +406,19 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
-			removeSocket(socket);
-			//close(socket);
-			return -1;
+			dsock = pairSock.getSocketFromList(socket);
+			send_msgs(dsock, bp, blen);	
+			//removeSocket(socket);
+			close(socket);
+			return blen;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
-			removeSocket(socket);
-//			close(socket);
-			return -1;
+			dsock = pairSock.getSocketFromList(socket);
+			send_msgs(dsock, bp, blen);	
+			//removeSocket(socket);
+			close(socket);
+			return blen;
 		}
 		bp += n;
 		bytes_to_read -= n;
@@ -454,11 +459,17 @@ int EpollServer::removeSocket(int socket){
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_sock_option(int listenSocket)
 {
+	struct linger linger = { 0 };
+	linger.l_onoff = 1;
+	linger.l_linger = 5;
 	// Reuse address set
 	int value = 1;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
+	if (setsockopt (listenSocket, SOL_SOCKET, SO_LINGER, (const char *) &linger, sizeof(linger)) == -1)
+		perror("setsockopt failed\n");
+
 	// Set buffer length to send or receive to _buflen.
 	value = _buflen;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
@@ -507,17 +518,20 @@ void * EpollServer::process_client(void * args)
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
 		while((blen=mServer->recv_msgs(sock, buf[count]))>0){
-			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf[count]);
+			printf("sock: %d to dsock %d blen: %d recvd: %s\n",sock, dsock, blen ,buf[count]);
 
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf[count], blen);	
 			//ClientData::Instance()->recordData(sock, mServer->_buflen);
-			
+			memset(buf[count], 0, mServer->_buflen);
 			count ++;
 			if(count == maxCount){
 				count = 0;
 			}
-			
+		}
+		count ++;
+		if(count == maxCount){
+			count = 0;
 		}
 	}		          				
 	return (void*)0;
