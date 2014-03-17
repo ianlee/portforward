@@ -507,7 +507,7 @@ void * EpollServer::process_client(void * args)
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
 		while((blen=mServer->recv_msgs(sock, buf[count]))>0){
-			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf);
+			printf("sock: %d to dsock %d recvd: %s\n",sock, dsock ,buf[count]);
 
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf[count], blen);	
