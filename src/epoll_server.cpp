@@ -490,6 +490,7 @@ int EpollServer::set_sock_option(int listenSocket)
 ----------------------------------------------------------------------------------------------------------------------*/
 void * EpollServer::process_client(void * args)
 {	
+	int count;
 	int sock;
 	int dsock;
 	int blen;
@@ -513,7 +514,7 @@ void * EpollServer::process_client(void * args)
 			//ClientData::Instance()->recordData(sock, mServer->_buflen);
 			
 			count ++;
-			if(count = maxCount){
+			if(count == maxCount){
 				count = 0;
 			}
 			
