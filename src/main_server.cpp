@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	EpollServer* server3;
 	const char* filename = "test/tests.txt";
 	int buflen = 255;
-	signal(SIGINT, signalHandler);  
+	//signal(SIGINT, signalHandler);  
 	//get args
 	while ((c = getopt (argc, argv, "f:n:p:t:b:n:")) != -1){
          switch (c){

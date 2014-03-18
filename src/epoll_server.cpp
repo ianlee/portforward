@@ -308,7 +308,7 @@ int EpollServer::accept_client(int socket)
 	
 	//add both sockets to current connection list. //TODO::change this to client list.
 	pairSock.insertPairOfSockets(sSocket, dSocket);
-	
+	printf("create client sockets %d, %d\n",sSocket, dSocket);
 	ClientData::Instance()->addClient(sSocket, inet_ntoa(client.sin_addr),client.sin_port );
 
 	return sSocket;
@@ -393,6 +393,7 @@ void EpollServer::send_msgs(int socket, char * data, int blen)
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::recv_msgs(int socket, char * bp)
 {
+	char ** bporiginal = &bp;
 	int n, bytes_to_read = _buflen;
 	int dsock;
 	int blen = 0;
@@ -407,18 +408,18 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			printf("error %d\n",errno);
 			ClientData::Instance()->removeClient(socket);
 			dsock = pairSock.getSocketFromList(socket);
-			send_msgs(dsock, bp, blen);	
-			//removeSocket(socket);
-			close(socket);
-			return blen;
+			send_msgs(dsock, *bporiginal, blen);	
+			removeSocket(socket);
+			//close(socket);
+			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
 			ClientData::Instance()->removeClient(socket);
 			dsock = pairSock.getSocketFromList(socket);
-			send_msgs(dsock, bp, blen);	
-			//removeSocket(socket);
-			close(socket);
-			return blen;
+			send_msgs(dsock, *bporiginal, blen);	
+			removeSocket(socket);
+			//close(socket);
+			return -1;
 		}
 		bp += n;
 		bytes_to_read -= n;
@@ -427,15 +428,21 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	if(n>0){
 		blen +=n;
 	}
+	printf("blen: %d recvd: %s\n", blen ,*bporiginal);
 
 	return blen;
 }
 
 int EpollServer::removeSocket(int socket){
 	int otherSocket = pairSock.getSocketFromList(socket);
+//	int res;
+//	char buffer[4000];
 	pairSock.removeSocketFromList(socket);
-    close(socket);
-    close(otherSocket);
+//	shutdown(socket, SHUT_WR);
+//	shutdown(otherSocket,SHUT_WR);
+	//sleep(1);	
+	close(socket);
+	close(otherSocket);
     return 0;
 }
 
@@ -467,17 +474,17 @@ int EpollServer::set_sock_option(int listenSocket)
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
-	if (setsockopt (listenSocket, SOL_SOCKET, SO_LINGER, (const char *) &linger, sizeof(linger)) == -1)
+	/*if (setsockopt (listenSocket, SOL_SOCKET, SO_LINGER, (const char *) &linger, sizeof(linger)) == -1)
 		perror("setsockopt failed\n");
-
+*/
 	// Set buffer length to send or receive to _buflen.
-	value = _buflen;
+	/*value = _buflen;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
 	
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
-
+*/
 	return listenSocket;
 
 }
@@ -507,7 +514,7 @@ void * EpollServer::process_client(void * args)
 	int blen;
 	EpollServer* mServer = (EpollServer*) args;
 	/*EpollServer* mServer = EpollServer::Instance();*/
-	int maxCount=10;
+	int maxCount=100;
 	char buf[maxCount][mServer->_buflen];	
 	count = 0;
 	while(1){
@@ -523,11 +530,12 @@ void * EpollServer::process_client(void * args)
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf[count], blen);	
 			//ClientData::Instance()->recordData(sock, mServer->_buflen);
-			memset(buf[count], 0, mServer->_buflen);
+
 			count ++;
 			if(count == maxCount){
 				count = 0;
 			}
+			memset(buf[count], 0, mServer->_buflen);
 		}
 		count ++;
 		if(count == maxCount){
@@ -554,7 +562,7 @@ void* EpollServer::epoll_loop(void * args){
 
 			// Case 1: Error condition
 	    		if (mevents[i].events & (EPOLLHUP)) {
-				fputs("epoll: EPOLLHUP", stderr);
+				fputs("epoll: EPOLLHUP\n", stderr);
 				int sock = mevents[i].data.fd;
 				//close(sock);
 				mServer->removeSocket(sock);
@@ -562,7 +570,7 @@ void* EpollServer::epoll_loop(void * args){
 				continue;
 	    		}
 	    		if (mevents[i].events & ( EPOLLERR)) {
-				fputs("epoll: EPOLLERR", stderr);
+				fputs("epoll: EPOLLERR\n", stderr);
 				int sock = mevents[i].data.fd;
 				//close(sock);
 				mServer->removeSocket(sock);
