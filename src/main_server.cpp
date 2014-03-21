@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	char c;
 	int port = TCP_PORT;
 	int serverType = 3;
-	int numberWorkers = 10;
+	int numberWorkers = 1;
 	/*MultiThreadServer* server1;
 	SelectServer* server2;*/
 	EpollServer* server3;

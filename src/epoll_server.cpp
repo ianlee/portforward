@@ -406,17 +406,19 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			}
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
 			printf("error %d\n",errno);
-			ClientData::Instance()->removeClient(socket);
+			
 			dsock = pairSock.getSocketFromList(socket);
-			send_msgs(dsock, *bporiginal, blen);	
+			send_msgs(dsock, bp, blen);	
+			ClientData::Instance()->removeClient(socket);
 			removeSocket(socket);
 			//close(socket);
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
-			ClientData::Instance()->removeClient(socket);
+			printf("blen %d, %p last packet of data %s\n", blen,*bporiginal, *bporiginal);
 			dsock = pairSock.getSocketFromList(socket);
 			send_msgs(dsock, *bporiginal, blen);	
+			ClientData::Instance()->removeClient(socket);
 			removeSocket(socket);
 			//close(socket);
 			return -1;
@@ -428,7 +430,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	if(n>0){
 		blen +=n;
 	}
-	printf("blen: %d recvd: %s\n", blen ,*bporiginal);
+	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, *bporiginal ,*bporiginal);
 
 	return blen;
 }
@@ -438,11 +440,11 @@ int EpollServer::removeSocket(int socket){
 //	int res;
 //	char buffer[4000];
 	pairSock.removeSocketFromList(socket);
-//	shutdown(socket, SHUT_WR);
-//	shutdown(otherSocket,SHUT_WR);
+	shutdown(socket, SHUT_WR);
+	shutdown(otherSocket,SHUT_WR);
 	//sleep(1);	
-	close(socket);
-	close(otherSocket);
+//	close(socket);
+//	close(otherSocket);
     return 0;
 }
 
@@ -524,9 +526,15 @@ void * EpollServer::process_client(void * args)
 		}*/
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
-		while((blen=mServer->recv_msgs(sock, buf[count]))>0){
+		while(1){
+			printf("buff addr before %p\n", (buf[count]));
+			blen=mServer->recv_msgs(sock, buf[count]);
+			
+			printf("buf addr after %p\n", (buf[count]));
 			printf("sock: %d to dsock %d blen: %d recvd: %s\n",sock, dsock, blen ,buf[count]);
-
+			if(blen <=0){
+				break;
+			}
 			//ClientData::Instance()->setRtt(sock);
 			mServer->send_msgs(dsock, buf[count], blen);	
 			//ClientData::Instance()->recordData(sock, mServer->_buflen);
@@ -564,7 +572,7 @@ void* EpollServer::epoll_loop(void * args){
 	    		if (mevents[i].events & (EPOLLHUP)) {
 				fputs("epoll: EPOLLHUP\n", stderr);
 				int sock = mevents[i].data.fd;
-				//close(sock);
+				close(sock);
 				mServer->removeSocket(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
@@ -572,7 +580,7 @@ void* EpollServer::epoll_loop(void * args){
 	    		if (mevents[i].events & ( EPOLLERR)) {
 				fputs("epoll: EPOLLERR\n", stderr);
 				int sock = mevents[i].data.fd;
-				//close(sock);
+				close(sock);
 				mServer->removeSocket(sock);
 				ClientData::Instance()->removeClient(sock);
 				continue;
