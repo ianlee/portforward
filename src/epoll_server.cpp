@@ -295,6 +295,10 @@ int EpollServer::accept_client(int socket)
 	}
 	//create socket connecting to destination
 	dSocket = connect_to_dest(socket);
+	// Make the fd_new non-blocking
+	if (fcntl (dSocket, F_SETFL, O_NONBLOCK | fcntl(dSocket, F_GETFL, 0)) == -1) {
+		fprintf(stderr,"fcntl\n");
+	}
 	// Add the new socket descriptors to the epoll loop
 	event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
 	event.data.fd = sSocket;
@@ -402,6 +406,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 		
 		if(n == -1){
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				printf("eaagain\n");
 				break;
 			}
 			printf("error %d %d %d\n", bytes_to_read, n, socket);
@@ -415,7 +420,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
-			printf("blen %d, %p last packet of data %s\n", blen,bporiginal, bporiginal);
+			//printf("blen %d, %p last packet of data %s\n", blen,bporiginal, bporiginal);
 			dsock = pairSock.getSocketFromList(socket);
 			send_msgs(dsock, bporiginal, blen);	
 			ClientData::Instance()->removeClient(socket);
@@ -430,7 +435,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	if(n>0){
 		blen +=n;
 	}
-	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, bporiginal ,bporiginal);
+//	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, bporiginal ,bporiginal);
 
 	return blen;
 }
@@ -521,18 +526,20 @@ void * EpollServer::process_client(void * args)
 	count = 0;
 	while(1){
 		mServer->fd_queue.pop(sock, mServer->timeout);
+		printf("sock off queue: %d\n",sock);
 	/*	if(!ClientData::Instance()->has(sock)){
 			continue;
 		}*/
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
 		while(1){
-			printf("buff addr before %p\n", (buf[count]));
+			//printf("buff addr before %p\n", (buf[count]));
 			blen=mServer->recv_msgs(sock, buf[count]);
 			
-			printf("buf addr after %p\n", (buf[count]));
+			//printf("buf addr after %p\n", (buf[count]));
 			printf("sock: %d to dsock %d blen: %d recvd: %s\n",sock, dsock, blen ,buf[count]);
 			if(blen <=0){
+				printf("blen was 0\n");
 				break;
 			}
 			//ClientData::Instance()->setRtt(sock);

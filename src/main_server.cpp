@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	//create stat printing thread
-	pthread_t tid;
-	pthread_create(&tid, NULL, printThread, (void*)NULL);
+	//pthread_t tid;
+	//pthread_create(&tid, NULL, printThread, (void*)NULL);
 	
 	//start server
 	switch(serverType){
