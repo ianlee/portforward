@@ -393,7 +393,7 @@ void EpollServer::send_msgs(int socket, char * data, int blen)
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::recv_msgs(int socket, char * bp)
 {
-	char ** bporiginal = &bp;
+	char * bporiginal = bp;
 	int n, bytes_to_read = _buflen;
 	int dsock;
 	int blen = 0;
@@ -415,9 +415,9 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
-			printf("blen %d, %p last packet of data %s\n", blen,*bporiginal, *bporiginal);
+			printf("blen %d, %p last packet of data %s\n", blen,bporiginal, bporiginal);
 			dsock = pairSock.getSocketFromList(socket);
-			send_msgs(dsock, *bporiginal, blen);	
+			send_msgs(dsock, bporiginal, blen);	
 			ClientData::Instance()->removeClient(socket);
 			removeSocket(socket);
 			//close(socket);
@@ -430,7 +430,7 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	if(n>0){
 		blen +=n;
 	}
-	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, *bporiginal ,*bporiginal);
+	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, bporiginal ,bporiginal);
 
 	return blen;
 }
@@ -440,11 +440,11 @@ int EpollServer::removeSocket(int socket){
 //	int res;
 //	char buffer[4000];
 	pairSock.removeSocketFromList(socket);
-	shutdown(socket, SHUT_WR);
-	shutdown(otherSocket,SHUT_WR);
+//	shutdown(socket, SHUT_WR);
+//	shutdown(otherSocket,SHUT_WR);
 	//sleep(1);	
-//	close(socket);
-//	close(otherSocket);
+	close(socket);
+	close(otherSocket);
     return 0;
 }
 
@@ -549,6 +549,7 @@ void * EpollServer::process_client(void * args)
 		if(count == maxCount){
 			count = 0;
 		}
+		memset(buf[count], 0, mServer->_buflen);
 	}		          				
 	return (void*)0;
 
