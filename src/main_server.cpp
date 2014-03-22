@@ -27,7 +27,7 @@ void signalHandler( int signum );
 int main(int argc, char **argv)
 {
 	char c;
-	int port = TCP_PORT;
+	//int port = TCP_PORT;
 	int serverType = 3;
 	int numberWorkers = 1;
 	/*MultiThreadServer* server1;
@@ -37,11 +37,11 @@ int main(int argc, char **argv)
 	int buflen = 255;
 	//signal(SIGINT, signalHandler);  
 	//get args
-	while ((c = getopt (argc, argv, "f:n:p:t:b:n:")) != -1){
+	while ((c = getopt (argc, argv, "f:n:t:b:n:")) != -1){
          switch (c){
-			case 'p':
-				port= atoi(optarg);
-				break;
+			//case 'p':
+			//	port= atoi(optarg);
+			//	break;
 			case 't':
 				serverType = atoi(optarg);
 				break;
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 				break;
 			case '?':
 			default:
-				fprintf(stderr, "Usage: %s [-t servertype] [-p port] [-f filename] [-n numberOfWorkers] [-b buflength]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-t servertype] [-f filename] [-n numberOfWorkers] [-b buflength]\n", argv[0]);
 				exit(1);
 		}
 	}
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		default:
 			/*server3 = EpollServer::Instance();*/
 			server3 = new EpollServer;
-			server3->set_port(port);
+			//server3->set_port(port);
 			server3->setBufLen(buflen);
 			server3->set_num_threads(numberWorkers);
 			server3->run();
