@@ -5,18 +5,18 @@
 --
 -- PROGRAM: server
 --
--- FUNCTIONS: EpollServer::EpollServer(int port)
---			  EpollServer* EpollServer::Instance()
+-- FUNCTIONS:
+--		
 --			  int EpollServer::run()
 --			  int EpollServer::create_socket()
 --			  int EpollServer::bind_socket()
 --			  void EpollServer::listen_for_clients()
 --			  int EpollServer::accept_client()
---			  void EpollServer::send_msgs(int socket, char * data)
+--			  void EpollServer::send_msgs(int socket, char * data, int blen)
 --			  int EpollServer::recv_msgs(int so+cket, char * bp)
 --			  int EpollServer::set_sock_option(int listenSocket)
 --			  void * EpollServer::process_client(void * args)
---			  int EpollServer::set_port(int port)
+--			  
 --			  int EpollServer::set_num_threads(int num)
 --			  int EpollServer::setBufLen(int buflen)
 --
@@ -32,52 +32,6 @@
 -- NOTES: Epoll server class tested by the echo client.
 ----------------------------------------------------------------------------------------------------------------------*/
 
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: EpollServer (constructor)
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: EpollServer::EpollServer(int port)
---				       int port - server port
---
--- RETURNS:  N/A
---
--- NOTES: Epoll Server constructor that will initialize the server port.
-----------------------------------------------------------------------------------------------------------------------*/
-//EpollServer::EpollServer(int port) : _port(port) {}
-
-
-//EpollServer* EpollServer::m_pInstance = NULL;
-
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: Instance
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: EpollServer* EpollServer::Instance()
---
--- RETURNS:  Returns the instance of class generated.
---
--- NOTES: Creates an instance of epoll server.
-----------------------------------------------------------------------------------------------------------------------*/
-/*EpollServer* EpollServer::Instance()
-{
-	static EpollServer m_pInstance;
-
-	return &m_pInstance;
-}*/
 
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: run
@@ -111,7 +65,7 @@ int EpollServer::run() {
 	epoll_client_fd = epoll_create(MAXCLIENTS);
 	if (epoll_client_fd == -1) 
 		fprintf(stderr,"epoll_create\n");
-	/*epoll loop should be in multiple threads: 1 for listen sockets, 1 for client sockets*/
+	/*epoll loop should be in multiple threads: 1 for listen sockets, 2 for client sockets*/
 	listenData.inst = this;
 	clientData.inst = this;
 	listenData.fd = epoll_fd;
@@ -126,8 +80,6 @@ int EpollServer::run() {
 	}
 	pthread_create(&listenThread, NULL, epoll_loop, (void*) &listenData);
 	pthread_create(&clientThread, NULL, epoll_loop, (void*) &clientData);
-/*	epoll_loop(epoll_fd);
-	epoll_loop(epoll_client_fd);*/
 	sleep(1);
 
 	return 0;
@@ -153,7 +105,7 @@ int EpollServer::create_listen_sockets(){
 		socket = bind_socket(socket, port);
 		socket = set_sock_option(socket);
 		conf->storeSocketIntoMap(port, socket);
-    	printf("create socket %d for port %d\n", socket, port);
+    		printf("create socket %d for port %d\n", socket, port);
 		// Make the server listening socket non-blocking
 		if (fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL, 0)) == -1) 
 			fprintf(stderr,"fcntl\n");
@@ -310,10 +262,9 @@ int EpollServer::accept_client(int socket)
 		fprintf(stderr,"epoll_ctl\n");
 	}
 	
-	//add both sockets to current connection list. //TODO::change this to client list.
+	//add both sockets to current connection list.
 	pairSock.insertPairOfSockets(sSocket, dSocket);
 	printf("create client sockets %d, %d\n",sSocket, dSocket);
-	ClientData::Instance()->addClient(sSocket, inet_ntoa(client.sin_addr),client.sin_port );
 
 	return sSocket;
 }
@@ -345,10 +296,6 @@ int EpollServer::connect_to_dest(int sSocket)
 		exit(1);
 		return 0;
 	}
-	if(socket > 0){
-		ClientData::Instance()->addClient(socket, inet_ntoa(server.sin_addr),server.sin_port );
-	}
-
 	return socket;
 }
 
@@ -363,9 +310,10 @@ int EpollServer::connect_to_dest(int sSocket)
 --
 -- PROGRAMMER: Ian Lee, Luke Tao
 --
--- INTERFACE: void EpollServer::send_msgs(int socket, char * data)
+-- INTERFACE: void EpollServer::send_msgs(int socket, char * data, int blen)
 --					  int socket - server sock
 --					  char * data - data that the server will send back to the client
+--					  int blen - length of data to send
 --
 -- RETURNS:  void
 --
@@ -393,7 +341,7 @@ void EpollServer::send_msgs(int socket, char * data, int blen)
 --
 -- RETURNS:  Socket Descriptor
 --
--- NOTES: Send Messages function used by the epoll server.
+-- NOTES: recv Messages function used by the epoll server.
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::recv_msgs(int socket, char * bp)
 {
@@ -414,18 +362,18 @@ int EpollServer::recv_msgs(int socket, char * bp)
 			
 			dsock = pairSock.getSocketFromList(socket);
 			send_msgs(dsock, bp, blen);	
-			ClientData::Instance()->removeClient(socket);
+			
 			removeSocket(socket);
-			//close(socket);
+			
 			return -1;
 		} else if (n == 0){
 			printf("socket was gracefully closed by other side %d\n",socket);
-			//printf("blen %d, %p last packet of data %s\n", blen,bporiginal, bporiginal);
+			
 			dsock = pairSock.getSocketFromList(socket);
 			send_msgs(dsock, bporiginal, blen);	
-			ClientData::Instance()->removeClient(socket);
+			
 			removeSocket(socket);
-			//close(socket);
+			
 			return -1;
 		}
 		bp += n;
@@ -435,22 +383,38 @@ int EpollServer::recv_msgs(int socket, char * bp)
 	if(n>0){
 		blen +=n;
 	}
-//	printf("blen: %d pointer %p, old pointer %p, recvd: %s\n", blen,bp, bporiginal ,bporiginal);
+
 
 	return blen;
 }
-
+/*-------------------------------------------------------------------------------------------------------------------- 
+-- FUNCTION: removeSocket(int socket)
+--
+-- DATE: 2014/02/21
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Ian Lee, Luke Tao
+--
+-- PROGRAMMER: Ian Lee, Luke Tao
+--
+-- INTERFACE: int EpollServer::removeSocket(int socket)
+--					       int socket - socket to close
+--
+-- RETURNS:  N/A
+--
+-- NOTES: Function that closes a pair of sockets. 
+----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::removeSocket(int socket){
 	int otherSocket = pairSock.getSocketFromList(socket);
-//	int res;
-//	char buffer[4000];
 	pairSock.removeSocketFromList(socket);
-//	shutdown(socket, SHUT_WR);
-//	shutdown(otherSocket,SHUT_WR);
-	//sleep(1);	
-	close(socket);
-	close(otherSocket);
-    return 0;
+	if(socket > 0){
+		close(socket);
+	}
+	if(otherSocket > 0){
+		close(otherSocket);
+	}
+	return 0;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------- 
@@ -469,29 +433,14 @@ int EpollServer::removeSocket(int socket){
 --
 -- RETURNS:  N/A
 --
--- NOTES: Function that sets the listening socket options.
+-- NOTES: Function that sets the socket options.
 ----------------------------------------------------------------------------------------------------------------------*/
 int EpollServer::set_sock_option(int listenSocket)
 {
-	struct linger linger = { 0 };
-	linger.l_onoff = 1;
-	linger.l_linger = 5;
 	// Reuse address set
 	int value = 1;
 	if (setsockopt (listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
 		perror("setsockopt failed\n");
-	
-	/*if (setsockopt (listenSocket, SOL_SOCKET, SO_LINGER, (const char *) &linger, sizeof(linger)) == -1)
-		perror("setsockopt failed\n");
-*/
-	// Set buffer length to send or receive to _buflen.
-	/*value = _buflen;
-	if (setsockopt (listenSocket, SOL_SOCKET, SO_SNDBUF, &value, sizeof(value)) == -1)
-		perror("setsockopt failed\n");
-	
-	if (setsockopt (listenSocket, SOL_SOCKET, SO_RCVBUF, &value, sizeof(value)) == -1)
-		perror("setsockopt failed\n");
-*/
 	return listenSocket;
 
 }
@@ -515,37 +464,30 @@ int EpollServer::set_sock_option(int listenSocket)
 ----------------------------------------------------------------------------------------------------------------------*/
 void * EpollServer::process_client(void * args)
 {	
-	int count;
+	int count=0;
 	int sock;
 	int dsock;
 	int blen;
 	EpollServer* mServer = (EpollServer*) args;
-	/*EpollServer* mServer = EpollServer::Instance();*/
 	int maxCount=100;
 	char buf[maxCount][mServer->_buflen];	
-	count = 0;
+
 	while(1){
+		//get socket off queue
 		mServer->fd_queue.pop(sock, mServer->timeout);
-		printf("sock off queue: %d\n",sock);
-	/*	if(!ClientData::Instance()->has(sock)){
-			continue;
-		}*/
+		//find destination socket
 		dsock = mServer->pairSock.getSocketFromList(sock);
 		if(dsock ==-1) continue;
+		//loop to forward data from source to dest socket
 		while(1){
-			//printf("buff addr before %p\n", (buf[count]));
 			blen=mServer->recv_msgs(sock, buf[count]);
-			
-			//printf("buf addr after %p\n", (buf[count]));
 			printf("sock: %d to dsock %d blen: %d recvd: %s\n",sock, dsock, blen ,buf[count]);
 			if(blen <=0){
-				printf("blen was 0\n");
+				printf("blen was 0; nothing to send\n");
 				break;
 			}
-			//ClientData::Instance()->setRtt(sock);
-			mServer->send_msgs(dsock, buf[count], blen);	
-			//ClientData::Instance()->recordData(sock, mServer->_buflen);
-
+			mServer->send_msgs(dsock, buf[count], blen);
+			//have list of buffers so that cannot be overwritten before write completes.
 			count ++;
 			if(count == maxCount){
 				count = 0;
@@ -582,7 +524,7 @@ void* EpollServer::epoll_loop(void * args){
 				int sock = mevents[i].data.fd;
 				close(sock);
 				mServer->removeSocket(sock);
-				ClientData::Instance()->removeClient(sock);
+				
 				continue;
 	    		}
 	    		if (mevents[i].events & ( EPOLLERR)) {
@@ -590,22 +532,17 @@ void* EpollServer::epoll_loop(void * args){
 				int sock = mevents[i].data.fd;
 				close(sock);
 				mServer->removeSocket(sock);
-				ClientData::Instance()->removeClient(sock);
+				
 				continue;
 	    		}
 	
 	    		assert (mevents[i].events & EPOLLIN);
-
-		    	// Case 2: Server is receiving a connection request
-			//if (mevents[i].data.fd == mServer->serverSock) {
-            if(type==1){
-                printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
+		    	// Case 2: Server is receiving a connection request..accept client
+            		if(type==1){
 				while(mServer->accept_client(mevents[i].data.fd)>1);
 				continue;
 	    		}
-
-	    		// Case 3: One of the sockets has read data
-            printf("data type:%d socket: %d\n", type, mevents[i].data.fd);
+	    		// Case 3: One of the sockets has read data.. add socket to queue for process client thread
 			mServer->fd_queue.push(mevents[i].data.fd, mServer->timeout);
 
  		}
@@ -614,28 +551,6 @@ void* EpollServer::epoll_loop(void * args){
 	return (void*) 0;
 }
 
-/*-------------------------------------------------------------------------------------------------------------------- 
--- FUNCTION: set_port
---
--- DATE: 2014/02/21
---
--- REVISIONS: (Date and Description)
---
--- DESIGNER: Ian Lee, Luke Tao
---
--- PROGRAMMER: Ian Lee, Luke Tao
---
--- INTERFACE: int EpollServer::set_port(int port)
---					int port - server port specified
---
--- RETURNS:  N/A
---
--- NOTES: Sets server port when starting the server.
-----------------------------------------------------------------------------------------------------------------------*/
-int EpollServer::set_port(int port){
-	_port = port;
-	return 1;
-}
 /*-------------------------------------------------------------------------------------------------------------------- 
 -- FUNCTION: set_num_threads
 --
