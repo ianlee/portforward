@@ -90,7 +90,7 @@ int EpollServer::create_listen_sockets(){
 	conf = new Config;
 	conf->setFilename("./config.txt");
 	conf->parseFile();
-	
+	conf->printForwardList();
 	struct epoll_event event;
 	int port;
 	int socket;
@@ -117,6 +117,7 @@ int EpollServer::create_listen_sockets(){
 		if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, socket, &event) == -1) 
 			fprintf(stderr,"epoll_ctl\n");
 	}
+	conf->printSocketList();
 	return epoll_fd;
 }
 
